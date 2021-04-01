@@ -5,3 +5,9 @@
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
+List.delete_all
+ActiveRecord::Base.connection.reset_pk_sequence!("lists")
+
+List.create(name:"Learning")
+List.create(name:"Recipes")
+List.create(name:"Movies")
