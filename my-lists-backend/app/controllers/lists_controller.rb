@@ -1,6 +1,6 @@
 class ListsController < ApplicationController
     def index
         lists = List.all
-        render json: list
+        render json: lists
     end
 end
