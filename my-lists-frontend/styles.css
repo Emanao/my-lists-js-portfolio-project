@@ -1,0 +1,41 @@
+body {
+    background-color: black;
+}
+
+.item1 {
+    grid-area: header;
+    text-align: center;
+    font-size: 1.5em;
+    border-bottom: 1px solid white;
+}
+
+.item2 {
+    grid-area: menu;
+    text-align: left;
+}
+
+.item3 {
+    grid-area: main;
+    text-align: left;
+}
+
+.item4 {
+    grid-area: footer;
+    text-align: center;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-areas: 'header header header header header header' 'menu main main main main main' 'footer footer footer footer footer footer';
+    grid-gap: 10px;
+    padding: 10px;
+    color: rgb(2, 80, 143);
+}
+
+.grid-container>div {
+    background-color: black;
+    font-family: 'Courier New', Courier, monospace;
+    color: rgb(2, 80, 143);
+    padding: 20px 0;
+    font-weight: bold;
+}
