@@ -17,8 +17,6 @@ body {
     text-align: center;
 }
 
-#navbar {}
-
 #navar ul {
     padding: 0;
     list-style: none;
@@ -30,9 +28,39 @@ body {
 
 #navbar a {
     color: royalblue;
+    /* border: 1px solid #555;
+    border-radius: 3px; */
     text-decoration: none;
-    font-size: 18px;
     padding-right: 15px;
+}
+
+#navbar a:focus {
+    outline: 4px dotted #e73;
+    outline-offset: 4px;
+    background: #ffa;
+}
+
+.forms-container {
+    padding: 10px;
+    padding-left: 2.5em;
+}
+
+.forms-container .form-group {
+    padding-bottom: 15px;
+}
+
+.forms-container .label {
+    display: block;
+}
+
+.forms-container input[type="text"] {
+    padding: 8px;
+    width: 100%;
+}
+
+#list-form,
+#website-form {
+    display: none;
 }
 
 #main-footer {
