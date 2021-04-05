@@ -1,3 +1,6 @@
+const BASE_URL = "http://localhost:3000"
+const LISTS_URL = `${BASE_URL}/lists`
+const WEBSITES_URL = `${BASE_URL}/websites`
 document.addEventListener("DOMContentLoaded", myListsOnLoad);
 
 function myListsOnLoad() {
@@ -16,7 +19,7 @@ function addListNavbarListeners() {
 }
 
 function addFormBtnListeners() {
-    document.querySelector("#list-form .button").addEventListener("click", addList);
+    document.querySelector("#list-form .button").addEventListener("click", addListFetch);
 }
 
 function toggleListForm(ev) {
@@ -47,8 +50,19 @@ function toggleForm(form) {
 
 }
 
-function addList(ev) {
+function addListFetch(ev) {
     ev.preventDefault();
-    console.log("Add List submit");
+    const listNameInpt = document.querySelector("#list-form input").value;
+    const confObj = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify({ name: listNameInpt })
+    }
+    fetch(LISTS_URL, confObj).then(res => console.log(res.json()))
+
+    console.log("Add List submitted");
 
 }
