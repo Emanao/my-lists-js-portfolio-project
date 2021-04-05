@@ -2,25 +2,37 @@ document.addEventListener("DOMContentLoaded", myListsOnLoad);
 
 function myListsOnLoad() {
     console.log("myListsOnLoad");
-    document.querySelectorAll("#navbar a").forEach(navbarItem => navbarItem.addEventListener('click', handleToggle));
+    initListeners();
 }
 
-function handleToggle(event) {
-    event.preventDefault();
+function initListeners() {
+    addListNavbarListeners();
+    addFormBtnListeners();
+}
+
+function addListNavbarListeners() {
+    document.getElementById("toggle-list").addEventListener('click', toggleListForm);
+    document.getElementById("toggle-address").addEventListener('click', toggleWebsiteForm);
+}
+
+function addFormBtnListeners() {
+    document.querySelector("#list-form .button").addEventListener("click", addList);
+}
+
+function toggleListForm(ev) {
+    ev.preventDefault();
     let addListNavbar = document.querySelector("#toggle-list");
-    let addURLNavbar = document.querySelector("#toggle-address");
     let listForm = document.getElementById("list-form");
+    toggleForm(listForm);
+    document.getElementById("website-form").style.display = "none";
+}
+
+function toggleWebsiteForm(ev) {
+    ev.preventDefault();
+    let addURLNavbar = document.querySelector("#toggle-address");
     let websiteForm = document.getElementById("website-form");
-
-    if (addListNavbar === event.target) {
-        toggleForm(listForm);
-        websiteForm.style.display = "none"
-    } else if (addURLNavbar === event.target) {
-        toggleForm(websiteForm);
-        listForm.style.display = "none"
-    }
-
-    console.log("in handleNavClick");
+    toggleForm(websiteForm);
+    document.getElementById("list-form").style.display = "none";
 
 }
 
@@ -31,4 +43,12 @@ function toggleForm(form) {
     } else {
         form.style.display = "none";
     }
+    console.log("in toggleForm");
+
+}
+
+function addList(ev) {
+    ev.preventDefault();
+    console.log("Add List submit");
+
 }
