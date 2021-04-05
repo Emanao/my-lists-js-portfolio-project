@@ -17,11 +17,14 @@
     </header>
     <nav id="navbar">
         <div class="container">
-            <ul>
-                <li><a href="#" id="toggle-list">Add List</a></li>
-                <li><a href="#" id="toggle-address">Add Website</a></li>
-            </ul>
-
+            <!-- Tab links -->
+            <div class="tablinks">
+                <ul>
+                    <li><a href="#" id="add-list">Add List</a></li>
+                    <li><a href="#" id="add-address">Add Website</a></li>
+                </ul>
+            </div>
+            <!-- Tab content -->
             <div class="forms-container">
                 <form id="list-form">
                     <div class="form-group">
@@ -33,7 +36,15 @@
                 <form id="website-form">
                     <div class="form-group">
                         <label for="">Website Name</label>
-                        <input type="text" name="name">
+                        <input type="text" name="website-name">
+                    </div>
+                    <div class="form-group">
+                        <label for="">Assign List</label>
+                        <input list="lists" name="list-name" id="list">
+
+                        <datalist id="lists">
+                          <option value="Unlisted Websites">
+                        </datalist>
                     </div>
                     <input class="button" type="submit" value="Submit">
                 </form>

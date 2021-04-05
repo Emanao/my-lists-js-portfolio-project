@@ -14,40 +14,43 @@ function initListeners() {
 }
 
 function addListNavbarListeners() {
-    document.getElementById("toggle-list").addEventListener('click', toggleListForm);
-    document.getElementById("toggle-address").addEventListener('click', toggleWebsiteForm);
+    document.getElementById("add-list")
+        .addEventListener('click', (event) => { navbarOnClick(event, document.getElementById("list-form")) }, false);
+    document.getElementById("add-address")
+        .addEventListener('click', (event) => { navbarOnClick(event, document.getElementById("website-form")) }, false);
 }
 
 function addFormBtnListeners() {
     document.querySelector("#list-form .button").addEventListener("click", addListFetch);
 }
 
-function toggleListForm(ev) {
-    ev.preventDefault();
-    let addListNavbar = document.querySelector("#toggle-list");
-    let listForm = document.getElementById("list-form");
-    toggleForm(listForm);
-    document.getElementById("website-form").style.display = "none";
-}
+function navbarOnClick(event, targetForm) {
+    let targetTab = event.target;
+    /* Hide all other forms but the one passed as argument */
+    document.querySelectorAll(".forms-container form").forEach(function(form) {
+        if (form !== targetForm) {
+            form.style.display = "none";
+        }
+    });
+    /* setup default color (royalblue) for all the tabs but the one being targeted */
+    document.querySelectorAll(".tablinks a").forEach(function(tab) {
+        if (tab !== targetTab) {
+            tab.style.color = "royalblue";
+        }
+    });
+    /*toggle form and tab color*/
+    if (isFormHidden(targetForm)) {
+        targetTab.style.color = "white";
+        targetForm.style.display = "block";
 
-function toggleWebsiteForm(ev) {
-    ev.preventDefault();
-    let addURLNavbar = document.querySelector("#toggle-address");
-    let websiteForm = document.getElementById("website-form");
-    toggleForm(websiteForm);
-    document.getElementById("list-form").style.display = "none";
-
-}
-
-function toggleForm(form) {
-    let isVisible = form.style.display
-    if (!isVisible || isVisible === "none") {
-        form.style.display = "block";
     } else {
-        form.style.display = "none";
+        targetForm.style.display = "none";
+        targetTab.style.color = "royalblue";
     }
-    console.log("in toggleForm");
+}
 
+function isFormHidden(form) {
+    return form.style.display === "" || form.style.display === "none";
 }
 
 function addListFetch(ev) {
