@@ -1,6 +1,6 @@
 body {
     background-color: black;
-    color: royalblue;
+    color: rgb(65, 145, 225);
     font-family: 'Courier New', Courier, monospace, Helvetica, Arial, sans-serif;
     font-size: 16px;
     line-height: 1.6em;
@@ -27,7 +27,7 @@ body {
 }
 
 #navbar a {
-    color: royalblue;
+    color: rgb(65, 145, 225);
     text-decoration: none;
     padding-right: 15px;
 }
@@ -48,6 +48,11 @@ body {
 .forms-container input[type="text"] {
     padding: 8px;
     width: 100%;
+}
+
+datalist {
+    max-height: 500px;
+    overflow-y: auto;
 }
 
 #list-form,
