@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", myListsOnLoad);
 function myListsOnLoad() {
     console.log("myListsOnLoad");
     initListeners();
-    loadAllListsInDL();
+    updateDatalist();
 }
 
 function initListeners() {
@@ -91,13 +91,12 @@ function addListOnSubmit(ev) {
 
 }
 
-function loadAllListsInDL() {
+function updateDatalist() {
     let dataListNode = document.querySelector("#lists");
-    let dlOptions = dataListNode.children;
-    for (const option of dlOptions) {
+    let datalistOptions = dataListNode.children;
+    for (const option of datalistOptions) {
         option.remove();
     }
-    console.log(dataListNode);
     fetch(LISTS_URL)
         .then(resp => {
             if (!resp.ok) {
