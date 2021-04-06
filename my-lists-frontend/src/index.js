@@ -24,7 +24,7 @@ function addListNavbarListeners() {
 }
 
 function addFormBtnListeners() {
-    document.querySelector("#list-form .button").addEventListener("click", addListSubmit);
+    document.querySelector("#list-form .button").addEventListener("click", addListOnSubmit);
 }
 
 function navbarOnClick(event, targetForm) {
@@ -33,19 +33,14 @@ function navbarOnClick(event, targetForm) {
     document.querySelectorAll(".forms-container form").forEach(function(form) {
         if (form !== targetForm) {
             form.style.display = "none";
-            console.log(form.id);
-            console.log(form.getElementsByTagName("input"));
-            document.querySelectorAll(`#${form.id} input[type]`).forEach(function(input) {
-                if (input.type === "text") {
-                    input.value = "";
-                }
-            })
+            resetInputFieldsforForm(form);
+
         }
     });
-    /* setup default color (royalblue) for all the tabs but the one being targeted */
+    /* setup default color (blue) for all the tabs but the one being targeted */
     document.querySelectorAll(".tablinks a").forEach(function(tab) {
         if (tab !== targetTab) {
-            tab.style.color = "royalblue";
+            tab.style.color = "rgb(65, 145, 225)";
         }
     });
     /*toggle form and tab color*/
@@ -55,15 +50,23 @@ function navbarOnClick(event, targetForm) {
 
     } else {
         targetForm.style.display = "none";
-        targetTab.style.color = "royalblue";
+        targetTab.style.color = rgb(65, 145, 225);
     }
+}
+
+function resetInputFieldsforForm(form) {
+    document.querySelectorAll(`#${form.id} input[type]`).forEach(function(input) {
+        if (input.type === "text") {
+            input.value = "";
+        }
+    })
 }
 
 function isFormHidden(form) {
     return form.style.display === "" || form.style.display === "none";
 }
 
-function addListSubmit(ev) {
+function addListOnSubmit(ev) {
     ev.preventDefault();
     const listNameInpt = document.querySelector("#list-form input").value;
     const confObj = {
