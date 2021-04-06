@@ -6,14 +6,17 @@ document.addEventListener("DOMContentLoaded", myListsOnLoad);
 function myListsOnLoad() {
     console.log("myListsOnLoad");
     initListeners();
+    loadAllListsInDL();
 }
 
 function initListeners() {
+    console.log("initListeners");
     addListNavbarListeners();
     addFormBtnListeners();
 }
 
 function addListNavbarListeners() {
+    /* Navbar links open specific content/forms*/
     document.getElementById("add-list")
         .addEventListener('click', (event) => { navbarOnClick(event, document.getElementById("list-form")) }, false);
     document.getElementById("add-address")
@@ -21,7 +24,7 @@ function addListNavbarListeners() {
 }
 
 function addFormBtnListeners() {
-    document.querySelector("#list-form .button").addEventListener("click", addListFetch);
+    document.querySelector("#list-form .button").addEventListener("click", addListSubmit);
 }
 
 function navbarOnClick(event, targetForm) {
@@ -53,7 +56,7 @@ function isFormHidden(form) {
     return form.style.display === "" || form.style.display === "none";
 }
 
-function addListFetch(ev) {
+function addListSubmit(ev) {
     ev.preventDefault();
     const listNameInpt = document.querySelector("#list-form input").value;
     const confObj = {
@@ -64,8 +67,44 @@ function addListFetch(ev) {
         },
         body: JSON.stringify({ name: listNameInpt })
     }
-    fetch(LISTS_URL, confObj).then(res => console.log(res.json()))
+    fetch(LISTS_URL, confObj)
+        .then(resp => {
+            if (!resp.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return resp.json();
+        })
+        .then(json => addDataList(json))
+        .catch(error => console.error("There has been problems with the fetch operation:", error));
 
     console.log("Add List submitted");
 
+}
+
+function loadAllListsInDL() {
+    let dataListNode = document.querySelector("#lists");
+    let dlOptions = dataListNode.children;
+    for (const option of dlOptions) {
+        option.remove();
+    }
+    console.log(dataListNode);
+    fetch(LISTS_URL)
+        .then(resp => {
+            if (!resp.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return resp.json()
+        })
+        .then(json => {
+            console.log(json)
+            json.forEach(list => addDataList(list));
+        })
+}
+
+function addDataList(listItem) {
+    let dataListNode = document.querySelector("#lists");
+    let dlOptionElem = document.createElement("option");
+    dlOptionElem.setAttribute("value", listItem.name);
+    dataListNode.appendChild(dlOptionElem);
+    return dataListNode;
 }
