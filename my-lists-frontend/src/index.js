@@ -33,6 +33,13 @@ function navbarOnClick(event, targetForm) {
     document.querySelectorAll(".forms-container form").forEach(function(form) {
         if (form !== targetForm) {
             form.style.display = "none";
+            console.log(form.id);
+            console.log(form.getElementsByTagName("input"));
+            document.querySelectorAll(`#${form.id} input[type]`).forEach(function(input) {
+                if (input.type === "text") {
+                    input.value = "";
+                }
+            })
         }
     });
     /* setup default color (royalblue) for all the tabs but the one being targeted */
@@ -95,16 +102,14 @@ function loadAllListsInDL() {
             }
             return resp.json()
         })
-        .then(json => {
-            console.log(json)
-            json.forEach(list => addDataList(list));
-        })
+        .then(json => json.forEach(list => addDataList(list)))
+        .catch(error => console.error("There has been problems with the fetch operation:", error));
 }
 
 function addDataList(listItem) {
     let dataListNode = document.querySelector("#lists");
-    let dlOptionElem = document.createElement("option");
-    dlOptionElem.setAttribute("value", listItem.name);
-    dataListNode.appendChild(dlOptionElem);
+    let datalistOptionElem = document.createElement("option");
+    datalistOptionElem.setAttribute("value", listItem.name);
+    dataListNode.appendChild(datalistOptionElem);
     return dataListNode;
 }
