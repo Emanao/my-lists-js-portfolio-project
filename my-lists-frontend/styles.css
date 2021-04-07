@@ -2,7 +2,7 @@ body {
     background-color: black;
     color: rgb(65, 145, 225);
     font-family: 'Courier New', Courier, monospace, Helvetica, Arial, sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1.6em;
     margin: 0;
 }
@@ -17,7 +17,8 @@ body {
     text-align: center;
 }
 
-#navar ul {
+#navar ul,
+#main ul {
     padding: 0;
     list-style: none;
 }
