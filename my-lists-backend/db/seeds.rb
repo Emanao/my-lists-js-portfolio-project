@@ -5,9 +5,20 @@
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
+Resource.delete_all
 List.delete_all
+
 ActiveRecord::Base.connection.reset_pk_sequence!("lists")
 
-List.create(name:"Learning")
-List.create(name:"Recipes")
-List.create(name:"Movies")
+news = List.create(name:"News")
+news.resources.create(address:"https://www.nytimes.com");
+news.resources.create(address:"https://www.elmundo.es");
+news.resources.create(address:"https://www.spiegel.de");
+
+learning = List.create(name:"Learning")
+learning.resources.create(address:"https://guides.rubyonrails.org");
+
+recipes = List.create(name:"Recipes")
+recipes.resources.create(address: "https://www.allrecipes.com/recipe/21014/good-old-fashioned-pancakes")
+
+movies = List.create(name:"Movies")
