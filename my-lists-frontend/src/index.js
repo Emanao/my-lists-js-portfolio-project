@@ -1,12 +1,12 @@
 const BASE_URL = "http://localhost:3000"
 const LISTS_URL = `${BASE_URL}/lists`
-const WEBSITES_URL = `${BASE_URL}/websites`
+const RESOURCES_URL = `${BASE_URL}/resources`
 document.addEventListener("DOMContentLoaded", myListsOnLoad);
 
 function myListsOnLoad() {
     console.log("myListsOnLoad");
     initListeners();
-    updateDatalist();
+    initializeDatalist();
 }
 
 function initListeners() {
@@ -18,13 +18,14 @@ function initListeners() {
 function addListNavbarListeners() {
     /* Navbar links open specific content/forms*/
     document.getElementById("add-list")
-        .addEventListener('click', (event) => { navbarOnClick(event, document.getElementById("list-form")) }, false);
+        .addEventListener('click', event => navbarOnClick(event, document.getElementById("list-form")));
     document.getElementById("add-address")
-        .addEventListener('click', (event) => { navbarOnClick(event, document.getElementById("website-form")) }, false);
+        .addEventListener('click', event => navbarOnClick(event, document.getElementById("website-form")));
 }
 
 function addFormBtnListeners() {
-    document.querySelector("#list-form .button").addEventListener("click", addListOnSubmit);
+    document.querySelector("#list-form button").addEventListener("click", addListOnSubmit);
+    document.querySelector("#website-form button").addEventListener("click", addWebsiteOnSubmit);
 }
 
 function navbarOnClick(event, targetForm) {
@@ -55,11 +56,8 @@ function navbarOnClick(event, targetForm) {
 }
 
 function resetInputFieldsforForm(form) {
-    document.querySelectorAll(`#${form.id} input[type]`).forEach(function(input) {
-        if (input.type === "text") {
-            input.value = "";
-        }
-    })
+    console.log(form.id)
+    document.querySelectorAll(`#${form.id} input`).forEach(input => input.value = "")
 }
 
 function isFormHidden(form) {
@@ -68,14 +66,14 @@ function isFormHidden(form) {
 
 function addListOnSubmit(ev) {
     ev.preventDefault();
-    const listNameInpt = document.querySelector("#list-form input").value;
+    const formInput = document.querySelector("#list-form input");
     const confObj = {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "Accept": "application/json"
         },
-        body: JSON.stringify({ name: listNameInpt })
+        body: JSON.stringify({ name: formInput.value })
     }
     fetch(LISTS_URL, confObj)
         .then(resp => {
@@ -84,15 +82,45 @@ function addListOnSubmit(ev) {
             }
             return resp.json();
         })
-        .then(json => addDataList(json))
+        .then(json => addDataListEntry(json))
         .catch(error => console.error("There has been problems with the fetch operation:", error));
 
     console.log("Add List submitted");
 
 }
 
-function updateDatalist() {
-    let dataListNode = document.querySelector("#lists");
+function addWebsiteOnSubmit(ev) {
+    ev.preventDefault();
+    const website = document.querySelector("#website-form input[type=text]");
+    const datalist = document.querySelector("#website-form input[list]");
+    const selectedOption = Array.from(datalist.list.options).find(option => datalist.value === option.value);
+    const list_id = selectedOption.dataset.listId;
+    console.log(`website: ${website.value} list_id ${list_id} `)
+    const confObj = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify({ address: website.value })
+    }
+    fetch(`${LISTS_URL}/${list_id}/resources`, confObj)
+        .then(resp => {
+            if (!resp.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return resp.json();
+        })
+        .then(json => console.log(json))
+        .catch(error => console.error("There has been problems with the fetch operation:", error));
+
+    console.log("Website submitted");
+
+}
+
+function initializeDatalist() {
+    console.log("initializeDatalist");
+    let dataListNode = document.querySelector("#datalist-lists");
     let datalistOptions = dataListNode.children;
     for (const option of datalistOptions) {
         option.remove();
@@ -104,14 +132,16 @@ function updateDatalist() {
             }
             return resp.json()
         })
-        .then(json => json.forEach(list => addDataList(list)))
+        .then(json => json.forEach(list => addDataListEntry(list)))
         .catch(error => console.error("There has been problems with the fetch operation:", error));
 }
 
-function addDataList(listItem) {
-    let dataListNode = document.querySelector("#lists");
-    let datalistOptionElem = document.createElement("option");
-    datalistOptionElem.setAttribute("value", listItem.name);
-    dataListNode.appendChild(datalistOptionElem);
-    return dataListNode;
+function addDataListEntry(listItem) {
+    console.log("addDataListEntry");
+    let dataList = document.querySelector("#datalist-lists");
+    let datalistOption = document.createElement("option");
+    datalistOption.setAttribute("data-list-id", listItem.id);
+    datalistOption.setAttribute("value", listItem.name);
+    dataList.appendChild(datalistOption);
+    return dataList;
 }
