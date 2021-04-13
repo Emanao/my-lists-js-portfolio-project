@@ -6,6 +6,8 @@ const htmlTabForms = document.querySelectorAll(".forms-container form")
 const tabBaseColor = "rgb(65, 145, 225)";
 const tabActiveColor = "white"
 
+// const RESOURCES_URL = `${BASE_URL}/resources`
+document.addEventListener("DOMContentLoaded", myListsOnLoad);
 
 class myListsTabHandler {
     constructor(htmlTab) {
@@ -17,11 +19,11 @@ class myListsTabHandler {
     set tab(htmlTab) {
         this._tab = htmlTab;
     }
-    get form() {
+    get formHndlr() {
         return this._form;
     }
-    set form(htmlForm) {
-        this._form = htmlForm;
+    set formHndlr(formHndlr) {
+        this._form = formHndlr;
     }
 
     initListener() {
@@ -31,14 +33,12 @@ class myListsTabHandler {
 
     activateTab() {
         console.log("activateTab");
-        console.log(this.tab);
         this.tab.style.color = tabActiveColor;
 
     }
 
     deactivateTab() {
         console.log("deactivateTab");
-        console.log(this.tab);
         this.tab.style.color = tabBaseColor;
     }
 
@@ -60,7 +60,9 @@ class myListsTabHandler {
 
         /*Save the state before resetting all tabs and forms properties*/
         const isTargetTabActive = this.isTabActive();
-        const targetForm = new myListsFormHandler(this.form)
+        const targetForm = this.formHndlr;
+        console.log(this);
+        console.log(this.formHndlr);
 
         myListsTabHandler.resetAllTabsProps();
         myListsFormHandler.resetAllFormsProps();
@@ -72,9 +74,6 @@ class myListsTabHandler {
             targetForm.show();
         }
     }
-
-
-
 }
 class myListsFormHandler {
     constructor(htmlForm) {
@@ -86,6 +85,11 @@ class myListsFormHandler {
     set form(htmlForm) {
         this._form = htmlForm;
     }
+
+    initListener() {
+        console.log("initListener");
+        document.querySelector(`#${this.form.id} button`).addEventListener("click", this.onSubmit);
+    }
     static resetAllFormsProps() {
         /* Hide all other forms but the one passed as argument */
         /* Initialize forms color before toggle  */
@@ -95,7 +99,6 @@ class myListsFormHandler {
             formObj.resetInputFields();
         });
     }
-
     resetInputFields() {
         console.log("resetInputFields");
         console.log(this.form.id);
@@ -112,49 +115,83 @@ class myListsFormHandler {
     isActive() {
         return this.form.style.display === "block";
     }
+    onSubmit(event) {
+        console.log("I was clicked!")
+    }
 
 }
+class myListsDatalistHandler {
+    constructor(htmlDatalist) {
+        this._datalist = htmlDatalist;
+    }
+    get datalist() {
+        return this._datalist;
+    }
+    set datalist(datalist) {
+        this._datalist = datalist;
+    }
+    initialize() {
+        console.log("initializeDatalist");
+        console.log(this.datalist);
+        let datalistOptions = this.datalist.children;
+        for (const option of datalistOptions) {
+            option.remove();
+        }
+        fetch(LISTS_URL)
+            .then(resp => {
+                if (!resp.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return resp.json()
+            })
+            .then(json => json.forEach(list => this.addDataListEntry(list)))
+            .catch(error => console.error("There has been problems with the fetch operation:", error));
+    }
 
-
-// const RESOURCES_URL = `${BASE_URL}/resources`
-document.addEventListener("DOMContentLoaded", myListsOnLoad);
-
+    addDataListEntry(jsonList) {
+        console.log("addDataListEntry");
+        console.log(this.datalist);
+        let datalistOption = document.createElement("option");
+        datalistOption.setAttribute("data-list-id", jsonList.id);
+        datalistOption.setAttribute("value", jsonList.name);
+        this.datalist.appendChild(datalistOption);
+        return this.datalist;
+    }
+}
 
 
 function myListsOnLoad() {
     console.log("myListsOnLoad");
+    /*AddList objs: tab + form */
     const htmlAddListTab = document.getElementById("add-list");
     const htmlAddListForm = document.getElementById("list-form");
-    const htmlAddAddressTab = document.getElementById("add-address");
-    const htmlAddAddressForm = document.getElementById("address-form");
 
     const addListTab = new myListsTabHandler(htmlAddListTab);
-    addListTab.form = htmlAddListForm;
+    const addListForm = new myListsFormHandler(htmlAddListForm);
+
+    addListTab.formHndlr = addListForm;
     addListTab.initListener();
+    addListForm.initListener();
+
+    /* AddAddress objs: tab + form */
+    const htmlAddAddressTab = document.getElementById("add-address");
+    const htmlAddAddressForm = document.getElementById("address-form");
+    const htmlDataList = document.querySelector("#datalist-lists");
 
     const addAddressTab = new myListsTabHandler(htmlAddAddressTab);
-    addAddressTab.form = htmlAddAddressForm;
+    const addAddressForm = new myListsFormHandler(htmlAddAddressForm);
+    const addAddressDatalist = new myListsDatalistHandler(htmlDataList);
+
+    addAddressTab.formHndlr = addAddressForm;
     addAddressTab.initListener();
+    addAddressForm.initListener();
+    addAddressDatalist.initialize();
+
+
+
+
 
     // initializeDatalist();
-}
-
-function initListeners() {
-    // console.log("initListeners");
-    // addListNavbarListeners();
-    addFormBtnListeners();
-}
-
-function addListNavbarListeners() {
-    /* Navbar links open specific content/forms*/
-    // document.getElementById("add-list").addEventListener('click', event => navbarOnClick(event, document.getElementById("list-form")));
-    // document.getElementById("add-address").addEventListener('click', event => navbarOnClick(event, document.getElementById("address-form")));
-
-}
-
-function addFormBtnListeners() {
-    document.querySelector("#list-form button").addEventListener("click", addListOnSubmit);
-    document.querySelector("#address-form button").addEventListener("click", addWebsiteOnSubmit);
 }
 
 function addListOnSubmit(ev) {

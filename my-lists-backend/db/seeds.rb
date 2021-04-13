@@ -10,6 +10,9 @@ List.delete_all
 
 ActiveRecord::Base.connection.reset_pk_sequence!("lists")
 
+unlisted = List.create(name:"Unlisted");
+unlisted.resources.create(address:"https://explore.simpli.com/history-photos-that-will-give-you-the-chills-copy-3/2?utm_subid=4437210&utm_adset=1155882&utm_source=facebook&utm_medium=referral&utm_campaign=785168&utm_referrer=dc-ref10&utm_template=infinite2&fbclid=IwAR2wSTOXSAOe2LG-K7roWWPptlwyXVWRSIZSCmLUoiHHBJFgbuaPSe6UCvc");
+
 news = List.create(name:"News")
 news.resources.create(address:"https://www.nytimes.com");
 news.resources.create(address:"https://www.elmundo.es");
