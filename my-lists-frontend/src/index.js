@@ -6,7 +6,6 @@ const htmlTabForms = document.querySelectorAll(".forms-container form")
 const tabBaseColor = "rgb(65, 145, 225)";
 const tabActiveColor = "white"
 
-// const RESOURCES_URL = `${BASE_URL}/resources`
 document.addEventListener("DOMContentLoaded", myListsOnLoad);
 
 class myListsTabHandler {
@@ -86,9 +85,16 @@ class myListsFormHandler {
         this._form = htmlForm;
     }
 
+    get datalist() {
+        return this._datalist;
+    }
+    set datalist(dataListHndlr) {
+        this._datalist = dataListHndlr;
+    }
+
     initListener() {
         console.log("initListener");
-        document.querySelector(`#${this.form.id} button`).addEventListener("click", this.onSubmit);
+        document.querySelector(`#${this.form.id}`).addEventListener("submit", this.onSubmit);
     }
     static resetAllFormsProps() {
         /* Hide all other forms but the one passed as argument */
@@ -99,9 +105,9 @@ class myListsFormHandler {
             formObj.resetInputFields();
         });
     }
+
     resetInputFields() {
         console.log("resetInputFields");
-        console.log(this.form.id);
         document.querySelectorAll(`#${this.form.id} input`).forEach(input => input.value = "")
     }
     hide() {
@@ -115,11 +121,67 @@ class myListsFormHandler {
     isActive() {
         return this.form.style.display === "block";
     }
-    onSubmit(event) {
-        console.log("I was clicked!")
+
+    static buildPostFetchConfOb(formData) {
+        return {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify(formData.bodyData)
+        }
+
+    }
+
+
+    onSubmit(ev) {
+        console.log("onSubmit");
+        ev.preventDefault();
+        // console.log(this);
+        // console.log(this.id);
+
+        const formData = {
+            bodyData: {}
+        };
+
+        /*The submit event fires on the <form> element itself*/
+        const formInputs = document.querySelectorAll(`#${this.id} input`);
+        formInputs.forEach((input) => {
+            if (!!input.list) {
+                formData.nestedId = {};
+                const selectedOption = Array.from(input.list.options).find(option => input.value === option.value);
+                formData.nestedId["id"] = selectedOption.dataset.listId;
+            } else {
+                formData.bodyData[input.name] = input.value;
+            }
+        });
+        // console.log(formData.nestedId);
+
+        const confObj = myListsFormHandler.buildPostFetchConfOb(formData);
+        // console.log(confObj);
+
+        const url = !!formData.nestedId ? `${LISTS_URL}/${formData.nestedId.id}/resources` : LISTS_URL;
+        // console.log(url);
+
+
+        fetch(url, confObj)
+            .then(resp => {
+                if (!resp.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return resp.json();
+            })
+            .then(json => console.log(json))
+            .catch(error => console.error("There has been problems with the fetch operation:", error));
+
+
+        console.log("Form submit clicked");
+
     }
 
 }
+
 class myListsDatalistHandler {
     constructor(htmlDatalist) {
         this._datalist = htmlDatalist;
@@ -132,7 +194,6 @@ class myListsDatalistHandler {
     }
     initialize() {
         console.log("initializeDatalist");
-        console.log(this.datalist);
         let datalistOptions = this.datalist.children;
         for (const option of datalistOptions) {
             option.remove();
@@ -176,102 +237,74 @@ function myListsOnLoad() {
     /* AddAddress objs: tab + form */
     const htmlAddAddressTab = document.getElementById("add-address");
     const htmlAddAddressForm = document.getElementById("address-form");
-    const htmlDataList = document.querySelector("#datalist-lists");
 
     const addAddressTab = new myListsTabHandler(htmlAddAddressTab);
     const addAddressForm = new myListsFormHandler(htmlAddAddressForm);
-    const addAddressDatalist = new myListsDatalistHandler(htmlDataList);
 
     addAddressTab.formHndlr = addAddressForm;
     addAddressTab.initListener();
     addAddressForm.initListener();
+
+    /*Add datalist to the AddAddress form*/
+    const htmlDataList = document.querySelector("#datalist-lists");
+    const addAddressDatalist = new myListsDatalistHandler(htmlDataList);
+    addAddressForm.datalist = addAddressDatalist;
     addAddressDatalist.initialize();
+    console.log(addAddressForm);
 
-
-
-
-
-    // initializeDatalist();
-}
-
-function addListOnSubmit(ev) {
-    ev.preventDefault();
-    const formInput = document.querySelector("#list-form input");
-    const confObj = {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        },
-        body: JSON.stringify({ name: formInput.value })
-    }
-    fetch(LISTS_URL, confObj)
-        .then(resp => {
-            if (!resp.ok) {
-                throw new Error("Network response was not ok");
-            }
-            return resp.json();
-        })
-        .then(json => addDataListEntry(json))
-        .catch(error => console.error("There has been problems with the fetch operation:", error));
-
-    console.log("Add List submitted");
 
 }
 
-function addWebsiteOnSubmit(ev) {
-    ev.preventDefault();
-    const website = document.querySelector("#address-form input[type=text]");
-    const datalist = document.querySelector("#address-form input[list]");
-    const selectedOption = Array.from(datalist.list.options).find(option => datalist.value === option.value);
-    const list_id = selectedOption.dataset.listId;
-    console.log(`website: ${website.value} list_id ${list_id} `)
-    const confObj = {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        },
-        body: JSON.stringify({ address: website.value })
-    }
-    fetch(`${LISTS_URL}/${list_id}/resources`, confObj)
-        .then(resp => {
-            if (!resp.ok) {
-                throw new Error("Network response was not ok");
-            }
-            return resp.json();
-        })
-        .then(json => console.log(json))
-        .catch(error => console.error("There has been problems with the fetch operation:", error));
-
-    console.log("Website submitted");
-
-}
-
-// function initializeDatalist() {
-//     console.log("initializeDatalist");
-//     let dataListNode = document.querySelector("#datalist-lists");
-//     let datalistOptions = dataListNode.children;
-//     for (const option of datalistOptions) {
-//         option.remove();
+// function addListOnSubmit(ev) {
+//     // ev.preventDefault();
+//     const formInput = document.querySelector("#list-form input");
+//     const confObj = {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json",
+//             "Accept": "application/json"
+//         },
+//         body: JSON.stringify({ name: formInput.value })
 //     }
-//     fetch(LISTS_URL)
+//     fetch(LISTS_URL, confObj)
 //         .then(resp => {
 //             if (!resp.ok) {
 //                 throw new Error("Network response was not ok");
 //             }
-//             return resp.json()
+//             return resp.json();
 //         })
-//         .then(json => json.forEach(list => addDataListEntry(list)))
+//         .then(json => addDataListEntry(json))
 //         .catch(error => console.error("There has been problems with the fetch operation:", error));
+
+//     console.log("Add List submitted");
+
 // }
 
-// function addDataListEntry(listItem) {
-//     console.log("addDataListEntry");
-//     let dataList = document.querySelector("#datalist-lists");
-//     let datalistOption = document.createElement("option");
-//     datalistOption.setAttribute("data-list-id", listItem.id);
-//     datalistOption.setAttribute("value", listItem.name);
-//     dataList.appendChild(datalistOption);
-//     return dataList;
+// function addWebsiteOnSubmit(ev) {
+//     ev.preventDefault();
+//     const website = document.querySelector("#address-form input[type=text]");
+//     const datalist = document.querySelector("#address-form input[list]");
+//     const selectedOption = Array.from(datalist.list.options).find(option => datalist.value === option.value);
+//     const list_id = selectedOption.dataset.listId;
+//     // console.log(`website: ${website.value} list_id ${list_id} `)
+//     const confObj = {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json",
+//             "Accept": "application/json"
+//         },
+//         body: JSON.stringify({ address: website.value })
+//     }
+//     fetch(`${LISTS_URL}/${list_id}/resources`, confObj)
+//         .then(resp => {
+//             if (!resp.ok) {
+//                 throw new Error("Network response was not ok");
+//             }
+//             return resp.json();
+//         })
+//         .then(json => console.log(json))
+//         .catch(error => console.error("There has been problems with the fetch operation:", error));
+
+//     console.log("Website submitted");
+
 // }
