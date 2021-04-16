@@ -94,7 +94,8 @@ class myListsFormHandler {
 
     initListener() {
         console.log("initListener");
-        document.querySelector(`#${this.form.id}`).addEventListener("submit", this.onSubmit);
+        document.querySelector(`#${this.form.id} button`).addEventListener("click", (ev) => this.onSubmit(ev));
+        // document.querySelector(`#${this.form.id} button`).addEventListener("click", (ev) => this.onSubmit(ev));
     }
     static resetAllFormsProps() {
         /* Hide all other forms but the one passed as argument */
@@ -122,31 +123,19 @@ class myListsFormHandler {
         return this.form.style.display === "block";
     }
 
-    static buildPostFetchConfOb(formData) {
-        return {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify(formData.bodyData)
-        }
-
-    }
-
-
     onSubmit(ev) {
         console.log("onSubmit");
         ev.preventDefault();
-        // console.log(this);
-        // console.log(this.id);
+        console.log(this);
+        console.log(this.form);
 
+        /*The submit event fires on the <form> element itself*/
+        /* 1st step - Get the formData for the submmited form.*/
         const formData = {
             bodyData: {}
         };
-
-        /*The submit event fires on the <form> element itself*/
-        const formInputs = document.querySelectorAll(`#${this.id} input`);
+        // let url, callback;
+        const formInputs = document.querySelectorAll(`#${this.form.id} input`);
         formInputs.forEach((input) => {
             if (!!input.list) {
                 formData.nestedId = {};
@@ -156,15 +145,40 @@ class myListsFormHandler {
                 formData.bodyData[input.name] = input.value;
             }
         });
+        console.log(formData);
+
+        /*2nd. Build configuration object.
+        Form text inputs are sent in the body and 
+        datalist input will be part of the nested route. 
+        */
+        const confObj = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify(formData.bodyData)
+        }
+
         // console.log(formData.nestedId);
+        console.log(confObj);
 
-        const confObj = myListsFormHandler.buildPostFetchConfOb(formData);
-        // console.log(confObj);
+        let url, callback;
+        if (!!formData.nestedId) {
+            url = `${LISTS_URL}/${formData.nestedId.id}/resources`;
+            callback = function() {
+                console.log("web resource added to the list");
+            }
+        } else {
+            url = LISTS_URL;
+            callback = (json) => {
+                console.log(json);
+                const datalist = new myListsDatalistHandler(document.querySelector("#datalist-lists"))
+                datalist.addDataListEntry(json);
+            };
+        }
 
-        const url = !!formData.nestedId ? `${LISTS_URL}/${formData.nestedId.id}/resources` : LISTS_URL;
-        // console.log(url);
-
-
+        console.log(url);
         fetch(url, confObj)
             .then(resp => {
                 if (!resp.ok) {
@@ -172,9 +186,8 @@ class myListsFormHandler {
                 }
                 return resp.json();
             })
-            .then(json => console.log(json))
+            .then(callback)
             .catch(error => console.error("There has been problems with the fetch operation:", error));
-
 
         console.log("Form submit clicked");
 
@@ -234,6 +247,7 @@ function myListsOnLoad() {
     addListTab.initListener();
     addListForm.initListener();
 
+
     /* AddAddress objs: tab + form */
     const htmlAddAddressTab = document.getElementById("add-address");
     const htmlAddAddressForm = document.getElementById("address-form");
@@ -245,66 +259,14 @@ function myListsOnLoad() {
     addAddressTab.initListener();
     addAddressForm.initListener();
 
+
     /*Add datalist to the AddAddress form*/
     const htmlDataList = document.querySelector("#datalist-lists");
     const addAddressDatalist = new myListsDatalistHandler(htmlDataList);
     addAddressForm.datalist = addAddressDatalist;
     addAddressDatalist.initialize();
+
     console.log(addAddressForm);
 
 
 }
-
-// function addListOnSubmit(ev) {
-//     // ev.preventDefault();
-//     const formInput = document.querySelector("#list-form input");
-//     const confObj = {
-//         method: "POST",
-//         headers: {
-//             "Content-Type": "application/json",
-//             "Accept": "application/json"
-//         },
-//         body: JSON.stringify({ name: formInput.value })
-//     }
-//     fetch(LISTS_URL, confObj)
-//         .then(resp => {
-//             if (!resp.ok) {
-//                 throw new Error("Network response was not ok");
-//             }
-//             return resp.json();
-//         })
-//         .then(json => addDataListEntry(json))
-//         .catch(error => console.error("There has been problems with the fetch operation:", error));
-
-//     console.log("Add List submitted");
-
-// }
-
-// function addWebsiteOnSubmit(ev) {
-//     ev.preventDefault();
-//     const website = document.querySelector("#address-form input[type=text]");
-//     const datalist = document.querySelector("#address-form input[list]");
-//     const selectedOption = Array.from(datalist.list.options).find(option => datalist.value === option.value);
-//     const list_id = selectedOption.dataset.listId;
-//     // console.log(`website: ${website.value} list_id ${list_id} `)
-//     const confObj = {
-//         method: "POST",
-//         headers: {
-//             "Content-Type": "application/json",
-//             "Accept": "application/json"
-//         },
-//         body: JSON.stringify({ address: website.value })
-//     }
-//     fetch(`${LISTS_URL}/${list_id}/resources`, confObj)
-//         .then(resp => {
-//             if (!resp.ok) {
-//                 throw new Error("Network response was not ok");
-//             }
-//             return resp.json();
-//         })
-//         .then(json => console.log(json))
-//         .catch(error => console.error("There has been problems with the fetch operation:", error));
-
-//     console.log("Website submitted");
-
-// }
