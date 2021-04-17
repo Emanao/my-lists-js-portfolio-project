@@ -3,54 +3,72 @@ const LISTS_URL = `${BASE_URL}/lists`
 
 const htmlTabLinks = document.querySelectorAll(".tablinks a");
 const htmlTabForms = document.querySelectorAll(".forms-container form")
-const tabBaseColor = "rgb(65, 145, 225)";
-const tabActiveColor = "white"
+
 
 document.addEventListener("DOMContentLoaded", myListsOnLoad);
 
 class myListsTabHandler {
-    constructor(htmlTab) {
-        this._tab = htmlTab;
+    constructor(htmlTab, formObj) {
+        this._tab = {
+            _html: htmlTab,
+            _form: formObj
+        };
+        this.color = myListsTabHandler.getStatusColor().tabBaseColor;
+        this.initListener();
     }
-    get tab() {
-        return this._tab;
+    get htmlTab() {
+        return this._tab._html;
     }
-    set tab(htmlTab) {
-        this._tab = htmlTab;
+    set htmlTab(htmlTab) {
+        this._tab._html = htmlTab;
     }
-    get formHndlr() {
-        return this._form;
+    get form() {
+        return this._tab._form;
     }
-    set formHndlr(formHndlr) {
-        this._form = formHndlr;
+    set form(formObj) {
+        this._tab._form = formObj;
+    }
+    get color() {
+        return this.htmlTab.style.color;
+    }
+    set color(color) {
+        this.htmlTab.style.color = color;
+    }
+    static getStatusColor() {
+        return {
+            tabBaseColor: "rgb(65, 145, 225)",
+            tabActiveColor: "white"
+        }
     }
 
     initListener() {
-        console.log("initListener");
-        this.tab.addEventListener('click', event => this.onClicked(event));
+        console.log("Tab initListener");
+        console.log(this);
+
+        this.htmlTab.addEventListener('click', event => this.onClicked(event));
     }
 
     activateTab() {
         console.log("activateTab");
-        this.tab.style.color = tabActiveColor;
+        console.log(this.htmlTab);
+        this.color = myListsTabHandler.getStatusColor().tabActiveColor;
 
     }
 
     deactivateTab() {
         console.log("deactivateTab");
-        this.tab.style.color = tabBaseColor;
+        this.color = myListsTabHandler.getStatusColor().tabBaseColor;
     }
 
     isTabActive() {
-        return this.tab.style.color === tabActiveColor;
+        // return this.tab.style.color === tabActiveColor;
     }
 
-    static resetAllTabsProps() {
-        console.log("resetAllTabsProps")
+    static setAllTabsInactive() {
+        console.log("resetTabProps")
             /* setup default color (blue) for all the tabs but the one being targeted */
         htmlTabLinks.forEach(tab => {
-            const tabObj = new myListsTabHandler(tab);
-            tabObj.deactivateTab();
+            tab.style.color = myListsTabHandler.getStatusColor().tabBaseColor;
         });
     }
 
@@ -58,52 +76,54 @@ class myListsTabHandler {
         console.log("onClicked");
 
         /*Save the state before resetting all tabs and forms properties*/
-        const isTargetTabActive = this.isTabActive();
-        const targetForm = this.formHndlr;
-        console.log(this);
-        console.log(this.formHndlr);
+        const currentColor = this.color;
+        console.log(currentColor);
 
-        myListsTabHandler.resetAllTabsProps();
-        myListsFormHandler.resetAllFormsProps();
+        myListsTabHandler.setAllTabsInactive();
+        myListsFormHandler.setAllFormsInactive();
 
-        /* After resetting the state of all tabs and forms just activate 
-        tab and form on when the previous state was inactive */
-        if (!isTargetTabActive) {
-            this.activateTab();
-            targetForm.show();
+        // /* After resetting the state of all tabs and forms just activate 
+        // tab and form on when the previous state was inactive */
+        if (currentColor === myListsTabHandler.getStatusColor().tabBaseColor) {
+            this.activateTab()
+            this.form.show();
         }
     }
 }
 class myListsFormHandler {
-    constructor(htmlForm) {
-        this._form = htmlForm;
+    constructor(htmlForm, datalistObj) {
+        this._form = {
+            _html: htmlForm,
+            _datalist: datalistObj
+        }
+        this.initListener();
     }
-    get form() {
-        return this._form;
+    get htmlForm() {
+        return this._form._html;
     }
-    set form(htmlForm) {
-        this._form = htmlForm;
+    set htmlForm(htmlForm) {
+        this._form._html = htmlForm;
     }
 
     get datalist() {
-        return this._datalist;
+        return this._form._datalist;
     }
-    set datalist(dataListHndlr) {
-        this._datalist = dataListHndlr;
+    set datalist(dataListObj) {
+        this._form._datalist = dataListObj;
     }
 
     initListener() {
-        console.log("initListener");
-        document.querySelector(`#${this.form.id} button`).addEventListener("click", (ev) => this.onSubmit(ev));
-        // document.querySelector(`#${this.form.id} button`).addEventListener("click", (ev) => this.onSubmit(ev));
+        console.log("Form initListener");
+        console.log(this);
+        document.querySelector(`#${this.htmlForm.id} button`).addEventListener("click", (ev) => this.onSubmit(ev));
     }
-    static resetAllFormsProps() {
+
+    static setAllFormsInactive() {
         /* Hide all other forms but the one passed as argument */
         /* Initialize forms color before toggle  */
         htmlTabForms.forEach(form => {
-            const formObj = new myListsFormHandler(form);
-            formObj.hide();
-            formObj.resetInputFields();
+            form.style.display = "none";
+            document.querySelectorAll(`#${form.id} input`).forEach(input => input.value = "")
         });
     }
 
@@ -113,14 +133,14 @@ class myListsFormHandler {
     }
     hide() {
         console.log("hide form");
-        this.form.style.display = "none";
+        this.htmlForm.style.display = "none";
     }
     show() {
         console.log("show form");
-        this.form.style.display = "block";
+        this.htmlForm.style.display = "block";
     }
     isActive() {
-        return this.form.style.display === "block";
+        return this.htmlForm.style.display === "block";
     }
 
     onSubmit(ev) {
@@ -236,37 +256,21 @@ class myListsDatalistHandler {
 
 function myListsOnLoad() {
     console.log("myListsOnLoad");
+
     /*AddList objs: tab + form */
     const htmlAddListTab = document.getElementById("add-list");
     const htmlAddListForm = document.getElementById("list-form");
 
-    const addListTab = new myListsTabHandler(htmlAddListTab);
     const addListForm = new myListsFormHandler(htmlAddListForm);
+    const addListTab = new myListsTabHandler(htmlAddListTab, addListForm);
 
-    addListTab.formHndlr = addListForm;
-    addListTab.initListener();
-    addListForm.initListener();
-
-
-    /* AddAddress objs: tab + form */
+    /* AddAddress objs: tab + form and datalist*/
     const htmlAddAddressTab = document.getElementById("add-address");
     const htmlAddAddressForm = document.getElementById("address-form");
-
-    const addAddressTab = new myListsTabHandler(htmlAddAddressTab);
-    const addAddressForm = new myListsFormHandler(htmlAddAddressForm);
-
-    addAddressTab.formHndlr = addAddressForm;
-    addAddressTab.initListener();
-    addAddressForm.initListener();
-
-
-    /*Add datalist to the AddAddress form*/
     const htmlDataList = document.querySelector("#datalist-lists");
+
     const addAddressDatalist = new myListsDatalistHandler(htmlDataList);
-    addAddressForm.datalist = addAddressDatalist;
-    addAddressDatalist.initialize();
-
-    console.log(addAddressForm);
-
+    const addAddressForm = new myListsFormHandler(htmlAddAddressForm, addAddressDatalist);
+    const addAddressTab = new myListsTabHandler(htmlAddAddressTab, addAddressForm);
 
 }
