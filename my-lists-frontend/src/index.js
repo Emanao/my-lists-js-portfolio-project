@@ -1,10 +1,6 @@
 const BASE_URL = "http://localhost:3000"
 const LISTS_URL = `${BASE_URL}/lists`
 
-const htmlTabLinks = document.querySelectorAll(".tablinks a");
-const htmlTabForms = document.querySelectorAll(".forms-container form")
-
-
 document.addEventListener("DOMContentLoaded", myListsOnLoad);
 
 class myListsTabHandler {
@@ -16,6 +12,23 @@ class myListsTabHandler {
         this.color = myListsTabHandler.getStatusColor().tabBaseColor;
         this.initListener();
     }
+
+    static getStatusColor() {
+        return {
+            tabBaseColor: "rgb(65, 145, 225)",
+            tabActiveColor: "white"
+        }
+    }
+
+    static setDefaults() {
+        console.log("static tab setDefaults")
+        const htmlTabLinks = document.querySelectorAll(".tablinks a");
+        /* setup default color (blue) for all the tabs but the one being targeted */
+        htmlTabLinks.forEach(tab => {
+            tab.style.color = myListsTabHandler.getStatusColor().tabBaseColor;
+        });
+    }
+
     get htmlTab() {
         return this._tab._html;
     }
@@ -34,23 +47,17 @@ class myListsTabHandler {
     set color(color) {
         this.htmlTab.style.color = color;
     }
-    static getStatusColor() {
-        return {
-            tabBaseColor: "rgb(65, 145, 225)",
-            tabActiveColor: "white"
-        }
-    }
 
     initListener() {
         console.log("Tab initListener");
-        console.log(this);
+        // console.log(this);
 
         this.htmlTab.addEventListener('click', event => this.onClicked(event));
     }
 
     activateTab() {
         console.log("activateTab");
-        console.log(this.htmlTab);
+        // console.log(this.htmlTab);
         this.color = myListsTabHandler.getStatusColor().tabActiveColor;
 
     }
@@ -60,17 +67,6 @@ class myListsTabHandler {
         this.color = myListsTabHandler.getStatusColor().tabBaseColor;
     }
 
-    isTabActive() {
-        // return this.tab.style.color === tabActiveColor;
-    }
-
-    static setAllTabsInactive() {
-        console.log("resetTabProps")
-            /* setup default color (blue) for all the tabs but the one being targeted */
-        htmlTabLinks.forEach(tab => {
-            tab.style.color = myListsTabHandler.getStatusColor().tabBaseColor;
-        });
-    }
 
     onClicked(event) {
         console.log("onClicked");
@@ -79,8 +75,8 @@ class myListsTabHandler {
         const currentColor = this.color;
         console.log(currentColor);
 
-        myListsTabHandler.setAllTabsInactive();
-        myListsFormHandler.setAllFormsInactive();
+        myListsTabHandler.setDefaults();
+        myListsFormHandler.setDefaults();
 
         // /* After resetting the state of all tabs and forms just activate 
         // tab and form on when the previous state was inactive */
@@ -98,6 +94,18 @@ class myListsFormHandler {
         }
         this.initListener();
     }
+
+    static setDefaults() {
+        console.log("static form setDefaults");
+        const htmlTabForms = document.querySelectorAll(".forms-container form");
+        /* Hide all other forms but the one passed as argument */
+        /* Initialize forms color before toggle  */
+        htmlTabForms.forEach(form => {
+            form.style.display = "none";
+            document.querySelectorAll(`#${form.id} input`).forEach(input => input.value = "")
+        });
+    }
+
     get htmlForm() {
         return this._form._html;
     }
@@ -114,48 +122,22 @@ class myListsFormHandler {
 
     initListener() {
         console.log("Form initListener");
-        console.log(this);
         document.querySelector(`#${this.htmlForm.id} button`).addEventListener("click", (ev) => this.onSubmit(ev));
     }
-
-    static setAllFormsInactive() {
-        /* Hide all other forms but the one passed as argument */
-        /* Initialize forms color before toggle  */
-        htmlTabForms.forEach(form => {
-            form.style.display = "none";
-            document.querySelectorAll(`#${form.id} input`).forEach(input => input.value = "")
-        });
-    }
-
-    resetInputFields() {
-        console.log("resetInputFields");
-        document.querySelectorAll(`#${this.form.id} input`).forEach(input => input.value = "")
-    }
     hide() {
-        console.log("hide form");
+        console.log("hide");
         this.htmlForm.style.display = "none";
     }
     show() {
-        console.log("show form");
+        console.log("show");
         this.htmlForm.style.display = "block";
     }
-    isActive() {
-        return this.htmlForm.style.display === "block";
-    }
-
-    onSubmit(ev) {
-        console.log("onSubmit");
-        ev.preventDefault();
-        console.log(this);
-        console.log(this.form);
-
-        /*The submit event fires on the <form> element itself*/
-        /* 1st step - Get the formData for the submmited form.*/
+    buildDataForSubmit() {
         const formData = {
             bodyData: {}
         };
-        // let url, callback;
-        const formInputs = document.querySelectorAll(`#${this.form.id} input`);
+
+        const formInputs = document.querySelectorAll(`#${this.htmlForm.id} input`);
         formInputs.forEach((input) => {
             if (!!input.list) {
                 formData.nestedId = {};
@@ -165,94 +147,107 @@ class myListsFormHandler {
                 formData.bodyData[input.name] = input.value;
             }
         });
-        console.log(formData);
-
-        /*2nd. Build configuration object.
-        Form text inputs are sent in the body and 
-        datalist input will be part of the nested route. 
-        */
-        const confObj = {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify(formData.bodyData)
-        }
-
-        // console.log(formData.nestedId);
-        console.log(confObj);
-
-        let url, callback;
-        if (!!formData.nestedId) {
-            url = `${LISTS_URL}/${formData.nestedId.id}/resources`;
-            callback = function() {
-                console.log("web resource added to the list");
-            }
-        } else {
-            url = LISTS_URL;
-            callback = (json) => {
-                console.log(json);
-                const datalist = new myListsDatalistHandler(document.querySelector("#datalist-lists"))
-                datalist.addDataListEntry(json);
-            };
-        }
-
-        console.log(url);
-        fetch(url, confObj)
-            .then(resp => {
-                if (!resp.ok) {
-                    throw new Error("Network response was not ok");
-                }
-                return resp.json();
-            })
-            .then(callback)
-            .catch(error => console.error("There has been problems with the fetch operation:", error));
-
-        console.log("Form submit clicked");
-
+        return formData;
     }
 
+    onSubmit(ev) {
+        console.log("onSubmit");
+        ev.preventDefault();
+        // console.log(this);
+        // console.log(this.htmlForm);
+
+        /*The submit event fires on the <form> element itself*/
+        /* 1st step - Get the formData for the submmited form.*/
+        const formData = this.buildDataForSubmit();
+        // console.log(formData);
+
+        if (!!formData.nestedId) {
+            const url = `${LISTS_URL}/${formData.nestedId.id}/resources`;
+            // callback = function() {
+            //     console.log("web resource added to the list");
+            // }
+        } else {
+            // console.log(this);
+            const url = LISTS_URL;
+            const jsonResp = myListsFetchRequest.myPostReq(LISTS_URL, formData.bodyData)
+                .then(json => {
+                    const htmlDataList = document.querySelector("#datalist-lists");
+                    // console.log(htmlDataList);
+                    // console.log(myListsDatalistHandler.createDatalistOption(json));
+                    htmlDataList.appendChild(myListsDatalistHandler.createDatalistOption(json))
+                });
+        };
+        console.log("Form submit clicked");
+    }
 }
 
 class myListsDatalistHandler {
     constructor(htmlDatalist) {
         this._datalist = htmlDatalist;
+        this.initializeOptions();
     }
-    get datalist() {
+    get htmlDatalist() {
         return this._datalist;
     }
-    set datalist(datalist) {
-        this._datalist = datalist;
+    set htmlDatalist(htmlDatalist) {
+        this._datalist = htmlDatalist;
     }
-    initialize() {
-        console.log("initializeDatalist");
-        let datalistOptions = this.datalist.children;
-        for (const option of datalistOptions) {
+    initializeOptions() {
+        console.log("Datalist initializeOptions");;
+        for (const option of this.htmlDatalist.children) {
             option.remove();
         }
-        fetch(LISTS_URL)
+        console.log(this.htmlDatalist);
+        const jsonResp = myListsFetchRequest.myGetReq(LISTS_URL)
+            .then(json => json.forEach(jsonOption =>
+                this.htmlDatalist.appendChild(myListsDatalistHandler.createDatalistOption(jsonOption))))
+    }
+    static createDatalistOption(jsonList) {
+        console.log("static createDatalistOption");
+        let datalistOption = document.createElement("option");
+        datalistOption.setAttribute("data-list-id", jsonList.id);
+        datalistOption.setAttribute("value", jsonList.name);
+        return datalistOption;
+    }
+}
+
+class myListsFetchRequest {
+    static get HEADERS() {
+        return {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+    }
+    static myGetReq(url) {
+        console.log("myGetReq")
+        return fetch(url)
             .then(resp => {
                 if (!resp.ok) {
                     throw new Error("Network response was not ok");
                 }
                 return resp.json()
             })
-            .then(json => json.forEach(list => this.addDataListEntry(list)))
+            .catch(error => console.error("There has been problems with the fetch operation:", error));
+    }
+    static myPostReq(url, data) {
+        console.log("myPostReq")
+        console.log(myListsFetchRequest.HEADERS);
+        console.log(data);
+        return fetch(url, {
+                method: "POST",
+                headers: myListsFetchRequest.HEADERS,
+                body: JSON.stringify(data)
+            })
+            .then(resp => {
+                if (!resp.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return resp.json()
+            })
             .catch(error => console.error("There has been problems with the fetch operation:", error));
     }
 
-    addDataListEntry(jsonList) {
-        console.log("addDataListEntry");
-        console.log(this.datalist);
-        let datalistOption = document.createElement("option");
-        datalistOption.setAttribute("data-list-id", jsonList.id);
-        datalistOption.setAttribute("value", jsonList.name);
-        this.datalist.appendChild(datalistOption);
-        return this.datalist;
-    }
 }
-
 
 function myListsOnLoad() {
     console.log("myListsOnLoad");
