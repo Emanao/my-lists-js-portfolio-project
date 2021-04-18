@@ -73,7 +73,7 @@ class myListsTabHandler {
 
         /*Save the state before resetting all tabs and forms properties*/
         const currentColor = this.color;
-        console.log(currentColor);
+        // console.log(currentColor);
 
         myListsTabHandler.setDefaults();
         myListsFormHandler.setDefaults();
@@ -159,17 +159,19 @@ class myListsFormHandler {
         /*The submit event fires on the <form> element itself*/
         /* 1st step - Get the formData for the submmited form.*/
         const formData = this.buildDataForSubmit();
-        // console.log(formData);
+        console.log(formData);
 
         if (!!formData.nestedId) {
             const url = `${LISTS_URL}/${formData.nestedId.id}/resources`;
-            // callback = function() {
-            //     console.log("web resource added to the list");
-            // }
+            const jsonResp = myListsFetchRequest.myPostReq(url, formData.bodyData)
+                .then(json => {
+                    console.log(json);
+                })
+
         } else {
             // console.log(this);
             const url = LISTS_URL;
-            const jsonResp = myListsFetchRequest.myPostReq(LISTS_URL, formData.bodyData)
+            const jsonResp = myListsFetchRequest.myPostReq(url, formData.bodyData)
                 .then(json => {
                     const htmlDataList = document.querySelector("#datalist-lists");
                     // console.log(htmlDataList);
