@@ -11,7 +11,16 @@ List.delete_all
 ActiveRecord::Base.connection.reset_pk_sequence!("lists")
 
 unlisted = List.create(name:"Unlisted");
-unlisted.resources.create(address:"https://explore.simpli.com/history-photos-that-will-give-you-the-chills-copy-3/2?utm_subid=4437210&utm_adset=1155882&utm_source=facebook&utm_medium=referral&utm_campaign=785168&utm_referrer=dc-ref10&utm_template=infinite2&fbclid=IwAR2wSTOXSAOe2LG-K7roWWPptlwyXVWRSIZSCmLUoiHHBJFgbuaPSe6UCvc");
+unlisted.resources.create(address:"http://csslint.net");
+
+jsProject = List.create(name:"JS Project");
+jsProject.resources.create(address:"https://github.com/learn-co-curriculum/environment-mac-os-catalina-setup");
+jsProject.resources.create(address:"https://help.learn.co/en/articles/492988-who-are-the-section-leads");
+jsProject.resources.create(address:"https://app.diagrams.net/");
+jsProject.resources.create(address:"https://github.com/learn-co-curriculum/js-spa-project-instructions/blob/master/project-planning-tips.md");
+jsProject.resources.create(address:"https://medium.com/javascript-scene/master-the-javascript-interview-what-is-functional-programming-7f218c68b3a0");
+
+
 
 news = List.create(name:"News")
 news.resources.create(address:"https://www.nytimes.com");
@@ -24,4 +33,4 @@ learning.resources.create(address:"https://guides.rubyonrails.org");
 recipes = List.create(name:"Recipes")
 recipes.resources.create(address: "https://www.allrecipes.com/recipe/21014/good-old-fashioned-pancakes")
 
-movies = List.create(name:"Movies")
+faq = List.create(name:"FAQ")
