@@ -136,6 +136,7 @@ class myListsFormHandler {
         const formData = {
             bodyData: {}
         };
+        console.log(this)
 
         const formInputs = document.querySelectorAll(`#${this.htmlForm.id} input`);
         formInputs.forEach((input) => {
@@ -206,11 +207,57 @@ class myListsDatalistHandler {
     }
     static createDatalistOption(jsonList) {
         console.log("static createDatalistOption");
-        let datalistOption = document.createElement("option");
+        const datalistOption = document.createElement("option");
         datalistOption.setAttribute("data-list-id", jsonList.id);
         datalistOption.setAttribute("value", jsonList.name);
         return datalistOption;
     }
+}
+class myListsFieldsetHandler {
+    constructor() {
+        console.log("myListsFieldsetHandler")
+        this.listsFieldset = document.querySelector("#main");
+        myListsFetchRequest.myGetReq(LISTS_URL)
+            .then(json => json.forEach(list => this.listsFieldset.appendChild(this.buildFieldset(list))))
+    }
+    buildFieldset(list) {
+        console.log("buildFieldset");
+        const fieldset = document.createElement("fieldset");
+        // fieldset.setAttribute("data-list-id", jsonList.id);
+
+        const legend = document.createElement("legend");
+        legend.textContent = list.name;
+        fieldset.appendChild(legend);
+        fieldset.appendChild(this.buildAddressesContainer(list));
+
+        return fieldset;
+
+    }
+    buildAddressesContainer(list) {
+        console.log("buildAddressesContainer");
+        const ul = document.createElement("ul");
+
+        myListsFetchRequest.myGetReq(`${LISTS_URL}/${list.id}/resources`)
+            .then(json => json.forEach(website => {
+                console.log(this.buildAddresses(website));
+                ul.appendChild(this.buildAddresses(website));
+            }))
+        console.log(ul);
+        return ul;
+
+
+    }
+    buildAddresses(website) {
+        console.log("buildAddressesForList");
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.setAttribute("href", website.address)
+        li.appendChild(a);
+        // console.log(li);
+
+        return li;
+    }
+
 }
 
 class myListsFetchRequest {
@@ -269,5 +316,7 @@ function myListsOnLoad() {
     const addAddressDatalist = new myListsDatalistHandler(htmlDataList);
     const addAddressForm = new myListsFormHandler(htmlAddAddressForm, addAddressDatalist);
     const addAddressTab = new myListsTabHandler(htmlAddAddressTab, addAddressForm);
+
+    const fieldsetHandler = new myListsFieldsetHandler();
 
 }
