@@ -17,8 +17,7 @@ body {
     text-align: center;
 }
 
-#navar ul,
-#main ul {
+#navar ul {
     padding: 0;
     list-style: none;
 }
@@ -31,6 +30,13 @@ body {
     color: rgb(65, 145, 225);
     text-decoration: none;
     padding-right: 15px;
+}
+
+#main a {
+    color: white;
+    text-decoration: none;
+    font-size: x-small;
+    font-weight: bold;
 }
 
 .forms-container {
