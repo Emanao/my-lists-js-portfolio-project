@@ -221,12 +221,12 @@ class myListsFieldsetHandler {
             .then(json => json.forEach(list => this.listsFieldset.appendChild(this.buildFieldset(list))))
     }
     buildFieldset(list) {
-        console.log("buildFieldset");
+        // console.log("buildFieldset");
         const fieldset = document.createElement("fieldset");
         // fieldset.setAttribute("data-list-id", jsonList.id);
 
         const legend = document.createElement("legend");
-        legend.textContent = list.name;
+        legend.innerText = list.name;
         fieldset.appendChild(legend);
         fieldset.appendChild(this.buildAddressesContainer(list));
 
@@ -234,16 +234,31 @@ class myListsFieldsetHandler {
 
     }
     buildAddressesContainer(list) {
-        console.log("buildAddressesContainer");
+        // console.log("buildAddressesContainer");
         const ul = document.createElement("ul");
 
         myListsFetchRequest.myGetReq(`${LISTS_URL}/${list.id}/resources`)
-            .then(json => json.forEach(website => {
-                console.log(this.buildAddresses(website));
-                ul.appendChild(this.buildAddresses(website));
-            }))
-        console.log(ul);
+            .then(json => {
+                console.log(json.length);
+                if (json.length === 0) {
+                    ul.appendChild(this.buildEmptyListDummy());
+                } else {
+                    ul.appendChild(this.buildEmptyListDummy());
+                    json.forEach(website =>
+                        ul.appendChild(this.buildAddresses(website)));
+                }
+            })
+            // console.log(ul);
         return ul;
+
+    }
+    buildEmptyListDummy() {
+        console.log("buildEmptyListDummy");
+        const p = document.createElement("p");
+        p.innerText = "Empty list";
+        return p;
+    }
+    removeEmptyListDummy() {
 
 
     }
@@ -251,9 +266,10 @@ class myListsFieldsetHandler {
         console.log("buildAddressesForList");
         const li = document.createElement("li");
         const a = document.createElement("a");
-        a.setAttribute("href", website.address)
+        a.setAttribute("href", website.address);
+        a.setAttribute("target", "_blank")
+        a.innerText = website.address;
         li.appendChild(a);
-        // console.log(li);
 
         return li;
     }
@@ -292,6 +308,24 @@ class myListsFetchRequest {
                     throw new Error("Network response was not ok");
                 }
                 return resp.json()
+            })
+            .catch(error => console.error("There has been problems with the fetch operation:", error));
+    }
+    static myDeleteReq(url, data) {
+        console.log("myDeleteReq")
+        console.log(myListsFetchRequest.HEADERS);
+        console.log(data);
+
+        return fetch(url, {
+                method: 'DELETE',
+                headers: myListsFetchRequest.HEADERS,
+                body: JSON.stringify(data)
+            })
+            .then(resp => {
+                if (!resp.ok) {
+                    throw new Error(resp.statusText);
+                }
+                return resp.json();
             })
             .catch(error => console.error("There has been problems with the fetch operation:", error));
     }
