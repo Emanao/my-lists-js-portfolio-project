@@ -136,7 +136,7 @@ class myListsFormHandler {
         const formData = {
             bodyData: {}
         };
-        console.log(this)
+        // console.log(this)
 
         const formInputs = document.querySelectorAll(`#${this.htmlForm.id} input`);
         formInputs.forEach((input) => {
@@ -163,17 +163,26 @@ class myListsFormHandler {
             // Add Addresses Form On Submit (contains an input field +  datalist element)
             const url = `${LISTS_URL}/${formData.nestedId.id}/resources`;
             const jsonResp = myListsFetchRequest.myPostReq(url, formData.bodyData)
-                .then(json => {
-                    console.log(json);
-                })
+                .then(nestedResp => {
+                    const fieldsets = document.querySelectorAll("fieldset");
 
+                    // Find fieldset for rested resource
+                    const fieldset = Array.from(fieldsets).find(fieldset => fieldset.dataset.listId === `${nestedResp.list_id}`);
+
+                    // If it is empty erase p dummy and append new li to fieldset ul
+                    const fieldsetUl = fieldset.querySelector("ul");
+                    const emptyListDummy = fieldsetUl.querySelector("ul > p");
+                    if (!!emptyListDummy) {
+                        fieldsetUl.removeChild(emptyListDummy);
+                    }
+                    fieldsetUl.appendChild(myListsFieldsetHandler.buildAddress(nestedResp));
+                })
         } else {
             // Add List Form On Submit (contains only an input field )
             const url = LISTS_URL;
             const jsonResp = myListsFetchRequest.myPostReq(url, formData.bodyData)
                 .then(resp => {
                     // Update Datalist in the Add Addreses Form with response
-                    // console.log(this);
                     myListsDatalistHandler.htmlDatalist().appendChild(myListsDatalistHandler.createDatalistOption(resp));
                     // Update Fieldset with new List
                     myListsFieldsetHandler.fieldsetsContainer().appendChild(
@@ -249,7 +258,7 @@ class myListsFieldsetHandler {
     static buildFieldset(list) {
         // console.log("buildFieldset");
         const fieldset = document.createElement("fieldset");
-        // fieldset.setAttribute("data-list-id", jsonList.id);
+        fieldset.setAttribute("data-list-id", list.id);
 
         const legend = document.createElement("legend");
         legend.innerText = list.name;
@@ -351,7 +360,6 @@ class myListsFetchRequest {
             })
             .catch(error => console.error("There has been problems with the fetch operation:", error));
     }
-
 }
 
 function myListsOnLoad() {
