@@ -155,14 +155,12 @@ class myListsFormHandler {
         console.log("onSubmit");
         ev.preventDefault();
         // console.log(this);
-        // console.log(this.htmlForm);
 
-        /*The submit event fires on the <form> element itself*/
-        /* 1st step - Get the formData for the submmited form.*/
         const formData = this.buildDataForSubmit();
         console.log(formData);
 
         if (!!formData.nestedId) {
+            // Add Addresses Form On Submit (contains an input field +  datalist element)
             const url = `${LISTS_URL}/${formData.nestedId.id}/resources`;
             const jsonResp = myListsFetchRequest.myPostReq(url, formData.bodyData)
                 .then(json => {
@@ -170,14 +168,17 @@ class myListsFormHandler {
                 })
 
         } else {
-            // console.log(this);
+            // Add List Form On Submit (contains only an input field )
             const url = LISTS_URL;
             const jsonResp = myListsFetchRequest.myPostReq(url, formData.bodyData)
-                .then(json => {
-                    const htmlDataList = document.querySelector("#datalist-lists");
-                    // console.log(htmlDataList);
-                    // console.log(myListsDatalistHandler.createDatalistOption(json));
-                    htmlDataList.appendChild(myListsDatalistHandler.createDatalistOption(json))
+                .then(resp => {
+                    // Update Datalist in the Add Addreses Form with response
+                    // console.log(this);
+                    myListsDatalistHandler.htmlDatalist().appendChild(myListsDatalistHandler.createDatalistOption(resp));
+                    // Update Fieldset with new List
+                    myListsFieldsetHandler.fieldsetsContainer().appendChild(
+                        myListsFieldsetHandler.buildFieldset(resp));
+
                 });
         };
         console.log("Form submit clicked");
@@ -185,8 +186,8 @@ class myListsFormHandler {
 }
 
 class myListsDatalistHandler {
-    constructor(htmlDatalist) {
-        this._datalist = htmlDatalist;
+    constructor() {
+        this._datalist = myListsDatalistHandler.htmlDatalist();
         this.initializeOptions();
     }
     get htmlDatalist() {
@@ -195,12 +196,15 @@ class myListsDatalistHandler {
     set htmlDatalist(htmlDatalist) {
         this._datalist = htmlDatalist;
     }
+    static htmlDatalist() {
+        return document.querySelector("#datalist-lists");
+    }
     initializeOptions() {
         console.log("Datalist initializeOptions");;
         for (const option of this.htmlDatalist.children) {
             option.remove();
         }
-        console.log(this.htmlDatalist);
+        // console.log(this.htmlDatalist);
         const jsonResp = myListsFetchRequest.myGetReq(LISTS_URL)
             .then(json => json.forEach(jsonOption =>
                 this.htmlDatalist.appendChild(myListsDatalistHandler.createDatalistOption(jsonOption))))
@@ -213,14 +217,36 @@ class myListsDatalistHandler {
         return datalistOption;
     }
 }
+
 class myListsFieldsetHandler {
-    constructor() {
+    constructor(list) {
         console.log("myListsFieldsetHandler")
-        this.listsFieldset = document.querySelector("#main");
-        myListsFetchRequest.myGetReq(LISTS_URL)
-            .then(json => json.forEach(list => this.listsFieldset.appendChild(this.buildFieldset(list))))
+        this.list = list;
+
     }
-    buildFieldset(list) {
+    static fieldsetsContainer() {
+        return document.querySelector("#main");
+    }
+
+    static onLoad() {
+        console.log("onLoad");
+        const main = this.fieldsetsContainer();
+
+        myListsFetchRequest.myGetReq(LISTS_URL)
+            .then(resp => resp.forEach(list => {
+                console.log(list);
+                main.appendChild(myListsFieldsetHandler.buildFieldset(list))
+            }))
+    }
+
+    get list() {
+        return this._listFieldset;
+    }
+    set list(list) {
+        this._listFieldset = list;
+    }
+
+    static buildFieldset(list) {
         // console.log("buildFieldset");
         const fieldset = document.createElement("fieldset");
         // fieldset.setAttribute("data-list-id", jsonList.id);
@@ -228,42 +254,39 @@ class myListsFieldsetHandler {
         const legend = document.createElement("legend");
         legend.innerText = list.name;
         fieldset.appendChild(legend);
-        fieldset.appendChild(this.buildAddressesContainer(list));
+        fieldset.appendChild(this.buildAddresses(list));
 
         return fieldset;
 
     }
-    buildAddressesContainer(list) {
-        // console.log("buildAddressesContainer");
+
+    static buildAddresses(list) {
+        // console.log("buildAddresses");
         const ul = document.createElement("ul");
 
         myListsFetchRequest.myGetReq(`${LISTS_URL}/${list.id}/resources`)
-            .then(json => {
-                console.log(json.length);
-                if (json.length === 0) {
-                    ul.appendChild(this.buildEmptyListDummy());
+            .then(resources => {
+                // console.log(resources.length);
+                if (resources.length === 0) {
+                    ul.appendChild(myListsFieldsetHandler.buildEmptyListDummy());
                 } else {
-                    ul.appendChild(this.buildEmptyListDummy());
-                    json.forEach(website =>
-                        ul.appendChild(this.buildAddresses(website)));
+                    resources.forEach(website =>
+                        ul.appendChild(this.buildAddress(website)));
                 }
             })
-            // console.log(ul);
         return ul;
 
     }
-    buildEmptyListDummy() {
+
+    static buildEmptyListDummy() {
         console.log("buildEmptyListDummy");
         const p = document.createElement("p");
         p.innerText = "Empty list";
         return p;
     }
-    removeEmptyListDummy() {
 
-
-    }
-    buildAddresses(website) {
-        console.log("buildAddressesForList");
+    static buildAddress(website) {
+        console.log("buildAddress");
         const li = document.createElement("li");
         const a = document.createElement("a");
         a.setAttribute("href", website.address);
@@ -273,7 +296,6 @@ class myListsFieldsetHandler {
 
         return li;
     }
-
 }
 
 class myListsFetchRequest {
@@ -345,12 +367,14 @@ function myListsOnLoad() {
     /* AddAddress objs: tab + form and datalist*/
     const htmlAddAddressTab = document.getElementById("add-address");
     const htmlAddAddressForm = document.getElementById("address-form");
-    const htmlDataList = document.querySelector("#datalist-lists");
+    // const htmlDataList = document.querySelector("#datalist-lists");
 
-    const addAddressDatalist = new myListsDatalistHandler(htmlDataList);
+    const addAddressDatalist = new myListsDatalistHandler();
     const addAddressForm = new myListsFormHandler(htmlAddAddressForm, addAddressDatalist);
     const addAddressTab = new myListsTabHandler(htmlAddAddressTab, addAddressForm);
 
-    const fieldsetHandler = new myListsFieldsetHandler();
+    myListsFieldsetHandler.onLoad();
+
+    // const fieldsetHandler = new myListsFieldsetHandler();
 
 }
