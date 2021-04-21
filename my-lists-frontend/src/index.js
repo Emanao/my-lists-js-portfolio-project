@@ -1,5 +1,6 @@
 const BASE_URL = "http://localhost:3000"
 const LISTS_URL = `${BASE_URL}/lists`
+const RESOURCES_URL = `${BASE_URL}/resources`
 
 document.addEventListener("DOMContentLoaded", myListsOnLoad);
 
@@ -228,11 +229,6 @@ class myListsDatalistHandler {
 }
 
 class myListsFieldsetHandler {
-    constructor(list) {
-        console.log("myListsFieldsetHandler")
-        this.list = list;
-
-    }
     static fieldsetsContainer() {
         return document.querySelector("#main");
     }
@@ -248,12 +244,6 @@ class myListsFieldsetHandler {
             }))
     }
 
-    get list() {
-        return this._listFieldset;
-    }
-    set list(list) {
-        this._listFieldset = list;
-    }
 
     static buildFieldset(list) {
         // console.log("buildFieldset");
@@ -296,15 +286,43 @@ class myListsFieldsetHandler {
 
     static buildAddress(website) {
         console.log("buildAddress");
+        console.log(website);
+
         const li = document.createElement("li");
         const a = document.createElement("a");
+        const button = document.createElement("button");
+
+        button.innerText = "x";
+        button.addEventListener("click", (ev) => this.deleteListElement(ev));
+
         a.setAttribute("href", website.address);
-        a.setAttribute("target", "_blank")
+        a.setAttribute("target", "_blank");
         a.innerText = website.address;
+
+        li.setAttribute("data-address-id", website.id);
         li.appendChild(a);
+        li.appendChild(button);
 
         return li;
     }
+
+    static deleteListElement(event) {
+        console.log("deleteListElement");
+
+        const childNode = event.currentTarget.parentElement;
+        const parentNode = childNode.parentNode;
+        const addressId = childNode.dataset.addressId;
+
+        parentNode.removeChild(childNode);
+        console.log(parentNode.children);
+        if (!!parentNode.children) {
+            parentNode.appendChild(this.buildEmptyListDummy());
+        }
+
+        myListsFetchRequest.myDeleteReq(`${RESOURCES_URL}/${addressId}`);
+
+    }
+
 }
 
 class myListsFetchRequest {
@@ -327,8 +345,7 @@ class myListsFetchRequest {
     }
     static myPostReq(url, data) {
         console.log("myPostReq")
-        console.log(myListsFetchRequest.HEADERS);
-        console.log(data);
+            // console.log(data);
         return fetch(url, {
                 method: "POST",
                 headers: myListsFetchRequest.HEADERS,
@@ -344,8 +361,6 @@ class myListsFetchRequest {
     }
     static myDeleteReq(url, data) {
         console.log("myDeleteReq")
-        console.log(myListsFetchRequest.HEADERS);
-        console.log(data);
 
         return fetch(url, {
                 method: 'DELETE',
@@ -367,15 +382,15 @@ function myListsOnLoad() {
 
     /*AddList objs: tab + form */
     const htmlAddListTab = document.getElementById("add-list");
-    const htmlAddListForm = document.getElementById("list-form");
 
+    const htmlAddListForm = document.getElementById("list-form");
     const addListForm = new myListsFormHandler(htmlAddListForm);
+
     const addListTab = new myListsTabHandler(htmlAddListTab, addListForm);
 
     /* AddAddress objs: tab + form and datalist*/
     const htmlAddAddressTab = document.getElementById("add-address");
     const htmlAddAddressForm = document.getElementById("address-form");
-    // const htmlDataList = document.querySelector("#datalist-lists");
 
     const addAddressDatalist = new myListsDatalistHandler();
     const addAddressForm = new myListsFormHandler(htmlAddAddressForm, addAddressDatalist);

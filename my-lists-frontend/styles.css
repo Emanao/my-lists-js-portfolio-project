@@ -32,6 +32,26 @@ body {
     padding-right: 15px;
 }
 
+#main {
+    padding: 10px;
+    padding-top: 20px;
+    margin-top: 20px;
+    border-top: double;
+}
+
+#main li {
+    display: block;
+}
+
+#main button {
+    border-radius: 5px;
+    float: right;
+}
+
+#main button:hover {
+    background-color: rgb(109, 167, 224);
+}
+
 #main a {
     color: white;
     text-decoration: none;
@@ -41,6 +61,7 @@ body {
 
 .forms-container {
     padding: 10px;
+    padding-right: 2.5em;
     padding-left: 2.5em;
 }
 

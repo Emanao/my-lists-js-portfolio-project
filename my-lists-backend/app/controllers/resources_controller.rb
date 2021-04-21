@@ -20,7 +20,10 @@ class ResourcesController < ApplicationController
             :include=>{:list=>{:except=>[:created_at, :updated_at]}},
             :except=>[:created_at, :updated_at]
         end
-        
-        
+    end
+    def destroy
+        resource = Resource.find(params[:id])
+        resource. destroy
+        render json: resource, :except=>[:created_at, :updated_at]
     end
 end
