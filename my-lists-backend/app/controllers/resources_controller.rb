@@ -2,7 +2,7 @@ class ResourcesController < ApplicationController
     def index
         if(params[:id])
             list = List.find(params[:id])
-            resources = list.resources
+            resources = list.resources.order("created_at")
             render json: resources, 
             :include=>{:list=>{:except=>[:created_at, :updated_at]}},
             :except=>[:created_at, :updated_at]
