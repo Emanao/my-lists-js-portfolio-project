@@ -16,6 +16,8 @@ unlisted.resources.create(address:"http://csslint.net");
 jsProject = List.create(name:"JS Project");
 jsProject.resources.create(address:"https://github.com/learn-co-curriculum/environment-mac-os-catalina-setup");
 jsProject.resources.create(address:"https://help.learn.co/en/articles/492988-who-are-the-section-leads");
+jsProject.resources.create(address:"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this");
+jsProject.resources.create(address:"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures");
 jsProject.resources.create(address:"https://app.diagrams.net/");
 jsProject.resources.create(address:"https://github.com/learn-co-curriculum/js-spa-project-instructions/blob/master/project-planning-tips.md");
 jsProject.resources.create(address:"https://medium.com/javascript-scene/master-the-javascript-interview-what-is-functional-programming-7f218c68b3a0");
