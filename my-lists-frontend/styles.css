@@ -59,6 +59,10 @@ body {
     font-weight: bold;
 }
 
+#main p {
+    display: inline;
+}
+
 .forms-container {
     padding: 10px;
     padding-right: 2.5em;

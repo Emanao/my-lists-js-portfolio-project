@@ -159,47 +159,13 @@ class myListsFormHandler {
         // console.log(formData);
 
         if (!!formData.nestedId) {
-            this.addAddressOnSubmit(formData)
+            // Add Website Form On Submit (contains an input and a datalist field)
+            myListsAddressHandler.onSubmit(formData)
         } else {
             // Add List Form On Submit (contains only an input field )
-            this.addListOnSubmit(formData);
+            myListsFieldsetHandler.onSubmit(formData);
 
         };
-        // console.log("Form submit clicked");
-    }
-    addListOnSubmit(data) {
-        const url = LISTS_URL;
-        const jsonResp = myListsFetchRequest.myPostReq(url, data.bodyData)
-            .then(resp => {
-                // Update Datalist in the Add Addreses Form with response
-                myListsDatalistHandler.htmlDatalist().appendChild(myListsDatalistHandler.createDatalistOption(resp));
-                // Update Fieldset with new List
-                myListsFieldsetHandler.fieldsetsContainer().appendChild(
-                    myListsFieldsetHandler.buildFieldset(resp));
-
-            });
-    }
-    addAddressOnSubmit(data) {
-        // Add Addresses Form On Submit (contains an input field +  datalist element)
-        const url = `${LISTS_URL}/${data.nestedId.id}/resources`;
-        const jsonResp = myListsFetchRequest.myPostReq(url, data.bodyData)
-            .then(nestedResp => {
-                const fieldsets = document.querySelectorAll("fieldset");
-                console.log(nestedResp);
-
-                // Find fieldset for rested resource
-                const fieldset = Array.from(fieldsets).find(fieldset => fieldset.dataset.listId === `${nestedResp.list_id}`);
-
-                // If it is empty erase p dummy and append new li to fieldset ul
-                const fieldsetUl = fieldset.querySelector("ul");
-                const emptyListDummy = fieldsetUl.querySelector("ul > p");
-
-                if (!!emptyListDummy) {
-                    fieldsetUl.removeChild(emptyListDummy);
-                }
-                fieldsetUl.appendChild(myListsFieldsetHandler.buildAddress(nestedResp));
-            })
-
     }
 }
 
@@ -237,18 +203,28 @@ class myListsDatalistHandler {
 }
 
 class myListsFieldsetHandler {
-    static fieldsetsContainer() {
+    static get fieldsetContainer() {
         return document.querySelector("#main");
     }
 
     static onLoad() {
         // console.log("onLoad");
-        const main = this.fieldsetsContainer();
-
         myListsFetchRequest.myGetReq(LISTS_URL)
-            .then(resp => resp.forEach(list => main.appendChild(myListsFieldsetHandler.buildFieldset(list))))
+            .then(resp => resp.forEach(list => this.fieldsetContainer.appendChild(this.buildFieldset(list))))
     }
 
+    static onSubmit(data) {
+        const url = LISTS_URL;
+        const jsonResp = myListsFetchRequest.myPostReq(url, data.bodyData)
+            .then(resp => {
+                // Update Datalist in the Add Addreses Form with response
+                myListsDatalistHandler.htmlDatalist().appendChild(myListsDatalistHandler.createDatalistOption(resp));
+                // Update Fieldset with new List
+                this.fieldsetsContainer.appendChild(
+                    this.buildFieldset(resp));
+
+            });
+    }
 
     static buildFieldset(list) {
         // console.log("buildFieldset");
@@ -258,10 +234,38 @@ class myListsFieldsetHandler {
         const legend = document.createElement("legend");
         legend.innerText = list.name;
         fieldset.appendChild(legend);
-        fieldset.appendChild(this.buildAddresses(list));
+        fieldset.appendChild(myListsAddressHandler.buildAddresses(list));
 
         return fieldset;
 
+    }
+
+    static deleteList() {
+        console.log(deleteList);
+    }
+
+}
+class myListsAddressHandler {
+
+    static onSubmit(data) {
+        // Add Addresses Form On Submit (contains an input field +  datalist element)
+        const url = `${LISTS_URL}/${data.nestedId.id}/resources`;
+        const jsonResp = myListsFetchRequest.myPostReq(url, data.bodyData)
+            .then(nestedResp => {
+                console.log(nestedResp);
+
+                // Find fieldset for rested resource
+                const fieldset = document.querySelector(`fieldset[data-list-id="${nestedResp.list_id}"]`);
+
+                const fieldsetUl = fieldset.querySelector("ul");
+                const emptyListDummy = fieldsetUl.querySelector("ul > p");
+
+                // If it is empty erase p dummy and append new li to fieldset ul
+                if (!!this.emptyListDummy) {
+                    fieldsetUl.removeChild(this.emptyListDummy);
+                }
+                fieldsetUl.appendChild(this.buildAddress(nestedResp));
+            })
     }
 
     static buildAddresses(list) {
@@ -269,24 +273,13 @@ class myListsFieldsetHandler {
         const ul = document.createElement("ul");
 
         myListsFetchRequest.myGetReq(`${LISTS_URL}/${list.id}/resources`)
-            .then(resources => {
-                // console.log(resources.length);
-                if (resources.length === 0) {
-                    ul.appendChild(myListsFieldsetHandler.buildEmptyListDummy());
-                } else {
-                    resources.forEach(website =>
-                        ul.appendChild(this.buildAddress(website)));
-                }
-            })
+            .then(resources =>
+                // If response is an empty object > Show "Delete List".
+                // if not append list of addresses to ul
+                (resources.length === 0) ? ul.appendChild(this.buildEmptyListDummy()) : resources.forEach(website =>
+                    ul.appendChild(this.buildAddress(website))))
         return ul;
 
-    }
-
-    static buildEmptyListDummy() {
-        console.log("buildEmptyListDummy");
-        const p = document.createElement("p");
-        p.innerText = "Empty list";
-        return p;
     }
 
     static buildAddress(website) {
@@ -295,10 +288,6 @@ class myListsFieldsetHandler {
 
         const li = document.createElement("li");
         const a = document.createElement("a");
-        const button = document.createElement("button");
-
-        button.innerText = "x";
-        button.addEventListener("click", (ev) => this.deleteListElement(ev));
 
         a.setAttribute("href", website.address);
         a.setAttribute("target", "_blank");
@@ -306,12 +295,36 @@ class myListsFieldsetHandler {
 
         li.setAttribute("data-address-id", website.id);
         li.appendChild(a);
-        li.appendChild(button);
+        li.appendChild(this.buildDeleteButton());
 
         return li;
     }
 
-    static deleteListElement(event) {
+    static buildEmptyListDummy() {
+        console.log("buildEmptyListDummy");
+
+        // return p;
+        const li = document.createElement("li");
+        const p = document.createElement("p");
+        p.innerText = "Delete list";
+
+        // li.setAttribute("data-address-id", website.id);
+        li.appendChild(p);
+        li.appendChild(this.buildDeleteButton());
+
+        return li;
+
+    }
+
+    static buildDeleteButton() {
+        const button = document.createElement("button");
+        button.innerText = "x";
+        button.addEventListener("click", (ev) => this.deleteItem(ev));
+        console.log(button);
+        return button;
+    }
+
+    static deleteItem(event) {
         console.log("deleteListElement");
 
         const childNode = event.currentTarget.parentElement;
@@ -328,7 +341,6 @@ class myListsFieldsetHandler {
         myListsFetchRequest.myDeleteReq(`${RESOURCES_URL}/${addressId}`);
 
     }
-
 }
 
 class myListsFetchRequest {
