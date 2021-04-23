@@ -22,7 +22,7 @@ class myListsTabHandler {
     }
 
     static setDefaults() {
-        console.log("static tab setDefaults")
+        // console.log("static tab setDefaults")
         const htmlTabLinks = document.querySelectorAll(".tablinks a");
         /* setup default color (blue) for all the tabs but the one being targeted */
         htmlTabLinks.forEach(tab => {
@@ -50,7 +50,7 @@ class myListsTabHandler {
     }
 
     initListener() {
-        console.log("Tab initListener");
+        // console.log("Tab initListener");
         // console.log(this);
 
         this.htmlTab.addEventListener('click', event => this.onClicked(event));
@@ -64,13 +64,13 @@ class myListsTabHandler {
     }
 
     deactivateTab() {
-        console.log("deactivateTab");
+        // console.log("deactivateTab");
         this.color = myListsTabHandler.getStatusColor().tabBaseColor;
     }
 
 
     onClicked(event) {
-        console.log("onClicked");
+        // console.log("onClicked");
 
         /*Save the state before resetting all tabs and forms properties*/
         const currentColor = this.color;
@@ -97,7 +97,7 @@ class myListsFormHandler {
     }
 
     static setDefaults() {
-        console.log("static form setDefaults");
+        // console.log("static form setDefaults");
         const htmlTabForms = document.querySelectorAll(".forms-container form");
         /* Hide all other forms but the one passed as argument */
         /* Initialize forms color before toggle  */
@@ -122,15 +122,13 @@ class myListsFormHandler {
     }
 
     initListener() {
-        console.log("Form initListener");
+        // console.log("Form initListener");
         document.querySelector(`#${this.htmlForm.id} button`).addEventListener("click", (ev) => this.onSubmit(ev));
     }
     hide() {
-        console.log("hide");
         this.htmlForm.style.display = "none";
     }
     show() {
-        console.log("show");
         this.htmlForm.style.display = "block";
     }
     buildDataForSubmit() {
@@ -153,45 +151,55 @@ class myListsFormHandler {
     }
 
     onSubmit(ev) {
-        console.log("onSubmit");
+        // console.log("onSubmit");
         ev.preventDefault();
-        // console.log(this);
+        console.log(this);
 
         const formData = this.buildDataForSubmit();
-        console.log(formData);
+        // console.log(formData);
 
         if (!!formData.nestedId) {
-            // Add Addresses Form On Submit (contains an input field +  datalist element)
-            const url = `${LISTS_URL}/${formData.nestedId.id}/resources`;
-            const jsonResp = myListsFetchRequest.myPostReq(url, formData.bodyData)
-                .then(nestedResp => {
-                    const fieldsets = document.querySelectorAll("fieldset");
-
-                    // Find fieldset for rested resource
-                    const fieldset = Array.from(fieldsets).find(fieldset => fieldset.dataset.listId === `${nestedResp.list_id}`);
-
-                    // If it is empty erase p dummy and append new li to fieldset ul
-                    const fieldsetUl = fieldset.querySelector("ul");
-                    const emptyListDummy = fieldsetUl.querySelector("ul > p");
-                    if (!!emptyListDummy) {
-                        fieldsetUl.removeChild(emptyListDummy);
-                    }
-                    fieldsetUl.appendChild(myListsFieldsetHandler.buildAddress(nestedResp));
-                })
+            this.addAddressOnSubmit(formData)
         } else {
             // Add List Form On Submit (contains only an input field )
-            const url = LISTS_URL;
-            const jsonResp = myListsFetchRequest.myPostReq(url, formData.bodyData)
-                .then(resp => {
-                    // Update Datalist in the Add Addreses Form with response
-                    myListsDatalistHandler.htmlDatalist().appendChild(myListsDatalistHandler.createDatalistOption(resp));
-                    // Update Fieldset with new List
-                    myListsFieldsetHandler.fieldsetsContainer().appendChild(
-                        myListsFieldsetHandler.buildFieldset(resp));
+            this.addListOnSubmit(formData);
 
-                });
         };
-        console.log("Form submit clicked");
+        // console.log("Form submit clicked");
+    }
+    addListOnSubmit(data) {
+        const url = LISTS_URL;
+        const jsonResp = myListsFetchRequest.myPostReq(url, data.bodyData)
+            .then(resp => {
+                // Update Datalist in the Add Addreses Form with response
+                myListsDatalistHandler.htmlDatalist().appendChild(myListsDatalistHandler.createDatalistOption(resp));
+                // Update Fieldset with new List
+                myListsFieldsetHandler.fieldsetsContainer().appendChild(
+                    myListsFieldsetHandler.buildFieldset(resp));
+
+            });
+    }
+    addAddressOnSubmit(data) {
+        // Add Addresses Form On Submit (contains an input field +  datalist element)
+        const url = `${LISTS_URL}/${data.nestedId.id}/resources`;
+        const jsonResp = myListsFetchRequest.myPostReq(url, data.bodyData)
+            .then(nestedResp => {
+                const fieldsets = document.querySelectorAll("fieldset");
+                console.log(nestedResp);
+
+                // Find fieldset for rested resource
+                const fieldset = Array.from(fieldsets).find(fieldset => fieldset.dataset.listId === `${nestedResp.list_id}`);
+
+                // If it is empty erase p dummy and append new li to fieldset ul
+                const fieldsetUl = fieldset.querySelector("ul");
+                const emptyListDummy = fieldsetUl.querySelector("ul > p");
+
+                if (!!emptyListDummy) {
+                    fieldsetUl.removeChild(emptyListDummy);
+                }
+                fieldsetUl.appendChild(myListsFieldsetHandler.buildAddress(nestedResp));
+            })
+
     }
 }
 
@@ -210,7 +218,7 @@ class myListsDatalistHandler {
         return document.querySelector("#datalist-lists");
     }
     initializeOptions() {
-        console.log("Datalist initializeOptions");;
+        // console.log("Datalist initializeOptions");;
         for (const option of this.htmlDatalist.children) {
             option.remove();
         }
@@ -220,7 +228,7 @@ class myListsDatalistHandler {
                 this.htmlDatalist.appendChild(myListsDatalistHandler.createDatalistOption(jsonOption))))
     }
     static createDatalistOption(jsonList) {
-        console.log("static createDatalistOption");
+        // console.log("static createDatalistOption");
         const datalistOption = document.createElement("option");
         datalistOption.setAttribute("data-list-id", jsonList.id);
         datalistOption.setAttribute("value", jsonList.name);
@@ -234,14 +242,11 @@ class myListsFieldsetHandler {
     }
 
     static onLoad() {
-        console.log("onLoad");
+        // console.log("onLoad");
         const main = this.fieldsetsContainer();
 
         myListsFetchRequest.myGetReq(LISTS_URL)
-            .then(resp => resp.forEach(list => {
-                console.log(list);
-                main.appendChild(myListsFieldsetHandler.buildFieldset(list))
-            }))
+            .then(resp => resp.forEach(list => main.appendChild(myListsFieldsetHandler.buildFieldset(list))))
     }
 
 
@@ -285,8 +290,8 @@ class myListsFieldsetHandler {
     }
 
     static buildAddress(website) {
-        console.log("buildAddress");
-        console.log(website);
+        // console.log("buildAddress");
+        // console.log(website);
 
         const li = document.createElement("li");
         const a = document.createElement("a");
@@ -312,10 +317,11 @@ class myListsFieldsetHandler {
         const childNode = event.currentTarget.parentElement;
         const parentNode = childNode.parentNode;
         const addressId = childNode.dataset.addressId;
+        console.log(parentNode);
 
         parentNode.removeChild(childNode);
         console.log(parentNode.children);
-        if (!!parentNode.children) {
+        if (!parentNode.children.length) {
             parentNode.appendChild(this.buildEmptyListDummy());
         }
 
@@ -333,7 +339,7 @@ class myListsFetchRequest {
         }
     }
     static myGetReq(url) {
-        console.log("myGetReq")
+        // console.log("myGetReq")
         return fetch(url)
             .then(resp => {
                 if (!resp.ok) {
@@ -344,8 +350,7 @@ class myListsFetchRequest {
             .catch(error => console.error("There has been problems with the fetch operation:", error));
     }
     static myPostReq(url, data) {
-        console.log("myPostReq")
-            // console.log(data);
+        // console.log("myPostReq")
         return fetch(url, {
                 method: "POST",
                 headers: myListsFetchRequest.HEADERS,
@@ -360,7 +365,7 @@ class myListsFetchRequest {
             .catch(error => console.error("There has been problems with the fetch operation:", error));
     }
     static myDeleteReq(url, data) {
-        console.log("myDeleteReq")
+        // console.log("myDeleteReq")
 
         return fetch(url, {
                 method: 'DELETE',
@@ -378,7 +383,7 @@ class myListsFetchRequest {
 }
 
 function myListsOnLoad() {
-    console.log("myListsOnLoad");
+    // console.log("myListsOnLoad");
 
     /*AddList objs: tab + form */
     const htmlAddListTab = document.getElementById("add-list");
@@ -397,7 +402,4 @@ function myListsOnLoad() {
     const addAddressTab = new myListsTabHandler(htmlAddAddressTab, addAddressForm);
 
     myListsFieldsetHandler.onLoad();
-
-    // const fieldsetHandler = new myListsFieldsetHandler();
-
 }
