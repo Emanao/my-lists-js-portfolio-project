@@ -1,6 +1,6 @@
 class ListsController < ApplicationController
     def index
-        lists = List.all
+        lists = List.all.order("created_at")
         render json: lists, only: [:id, :name]    
     end
     def create
