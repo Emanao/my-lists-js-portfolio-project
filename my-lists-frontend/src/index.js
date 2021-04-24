@@ -116,6 +116,9 @@ class myListsFormHandler {
     get formInputs() {
         return document.querySelectorAll(`#${this.htmlForm.id} input`);
     }
+    clearInputsFields() {
+        this.formInputs.forEach(input => input.value = "")
+    }
 
     get datalist() {
         return this._form._datalist;
@@ -166,20 +169,19 @@ class myListsFormHandler {
 
         const formData = this.buildDataForSubmit();
 
+        //Empty form inputs validation
         if ((Object.values(formData.bodyData)[0].trim() === "") || (formData.hasOwnProperty("nestedId") && (Object.values(formData.nestedId)[0].trim() === ""))) {
             window.alert("All fields are required. Please check your inputs.");
         } else {
             if (formData.hasOwnProperty("nestedId")) {
-                console.log("nested");
-                console.log(formData);
                 // Add Website Form On Submit (contains an input and a datalist field)
                 myListsAddressHandler.onSubmit(formData)
             } else {
                 // Add List Form On Submit (contains only an input field )
-                console.log(formData);
                 myListsFieldsetHandler.onSubmit(formData);
 
             };
+            this.clearInputsFields();
         }
     }
 }
@@ -208,9 +210,14 @@ class myListsDatalistHandler {
             .then(json => json.forEach(jsonOption =>
                 this.htmlDatalist.appendChild(myListsDatalistHandler.createDatalistOption(jsonOption))))
     }
+    static deleteDatalistOption(optionDatalistId) {
+        // console.log("deleteDatalistOption");
+        const deleteOption = this.htmlDatalist().querySelector(`option[data-list-id="${optionDatalistId}"]`);
+        this.htmlDatalist().removeChild(deleteOption);
+
+    }
     static createDatalistOption(jsonList) {
         // console.log("static createDatalistOption");
-        console.log(jsonList);
         const datalistOption = document.createElement("option");
         datalistOption.setAttribute("data-list-id", jsonList.id);
         datalistOption.setAttribute("value", jsonList.name);
@@ -261,9 +268,10 @@ class myListsFieldsetHandler {
     static deleteFieldset(ev) {
         console.log("deleteFieldset");
         const fieldsetNode = ev.currentTarget.parentElement.parentNode.parentNode;
-        console.log(fieldsetNode.dataset.listId)
         this.fieldsetContainer().removeChild(fieldsetNode);
+        myListsDatalistHandler.deleteDatalistOption(fieldsetNode.dataset.listId);
         myListsFetchRequest.myDeleteReq(`${LISTS_URL}/${fieldsetNode.dataset.listId}`);
+
     }
 
 }
