@@ -4,7 +4,7 @@ class ListsController < ApplicationController
         render json: lists, only: [:id, :name]    
     end
     def create
-        new_list = List.create(list_params)
+        new_list = List.create(name: params[:name])
         render json: new_list, :except=>[:created_at, :updated_at]
     end
     def destroy
