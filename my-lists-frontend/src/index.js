@@ -240,8 +240,12 @@ class myListsFieldsetHandler {
 
     }
 
-    static deleteList() {
-        console.log("deleteList");
+    static deleteFieldset(ev) {
+        console.log("deleteFieldset");
+        const fieldsetNode = ev.currentTarget.parentElement.parentNode.parentNode;
+        console.log(fieldsetNode.dataset.listId)
+        this.fieldsetContainer().removeChild(fieldsetNode);
+        myListsFetchRequest.myDeleteReq(`${LISTS_URL}/${fieldsetNode.dataset.listId}`);
     }
 
 }
@@ -297,7 +301,7 @@ class myListsAddressHandler {
         a.innerText = website.address;
 
         deleteButton.innerText = "x";
-        deleteButton.addEventListener("click", (ev) => this.deleteItem(ev));
+        deleteButton.addEventListener("click", (ev) => this.deleteAddress(ev));
 
         li.setAttribute("data-address-id", website.id);
         li.appendChild(a);
@@ -307,27 +311,27 @@ class myListsAddressHandler {
     }
 
     static buildEmptyListDummy() {
-        console.log("buildEmptyListDummy");
+        // console.log("buildEmptyListDummy");
 
         const li = document.createElement("li");
 
         const startP = document.createElement("p");
-        startP.innerText = "Click ";
+        startP.innerText = "Your list is empty! Click ";
 
         const aDeleteList = document.createElement("a");
         aDeleteList.setAttribute("href", "#");
         aDeleteList.innerText = "here";
-        aDeleteList.addEventListener("click", (ev) => myListsFieldsetHandler.deleteList(ev));
+        aDeleteList.addEventListener("click", (ev) => myListsFieldsetHandler.deleteFieldset(ev));
 
         const middleP = document.createElement("p");
-        middleP.innerText = ` to delete the list or `;
+        middleP.innerText = ` to delete it or `;
 
         const aAddWebsite = document.createElement("a");
         aAddWebsite.setAttribute("href", "#main-header");
         aAddWebsite.innerText = "here";
 
         const endP = document.createElement("p");
-        endP.innerText = ` to add a website to this list.`;
+        endP.innerText = ` to add a website from the menu.`;
 
 
         li.appendChild(startP);
@@ -340,8 +344,8 @@ class myListsAddressHandler {
 
     }
 
-    static deleteItem(event) {
-        console.log("deleteListElement");
+    static deleteAddress(event) {
+        console.log("deleteAddress");
 
         const childNode = event.currentTarget.parentElement;
         const parentNode = childNode.parentNode;

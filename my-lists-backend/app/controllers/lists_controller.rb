@@ -7,7 +7,9 @@ class ListsController < ApplicationController
         new_list = List.create(list_params)
         render json: new_list, :except=>[:created_at, :updated_at]
     end
-    def list_params
-        params.require(:list).permit(:id, :name)
-      end
+    def destroy
+        list = List.find(params[:id])
+        list.destroy
+        render json: list, :except=>[:created_at, :updated_at]
+    end
 end
