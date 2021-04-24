@@ -113,6 +113,9 @@ class myListsFormHandler {
     set htmlForm(htmlForm) {
         this._form._html = htmlForm;
     }
+    get formInputs() {
+        return document.querySelectorAll(`#${this.htmlForm.id} input`);
+    }
 
     get datalist() {
         return this._form._datalist;
@@ -135,15 +138,21 @@ class myListsFormHandler {
         const formData = {
             bodyData: {}
         };
-        // console.log(this)
 
-        const formInputs = document.querySelectorAll(`#${this.htmlForm.id} input`);
-        formInputs.forEach((input) => {
+        this.formInputs.forEach((input) => {
+            console.log(input);
+            console.log(input.value);
+
             if (!!input.list) {
+                //Datalist input
                 formData.nestedId = {};
+
+                // Get html option for selected value
                 const selectedOption = Array.from(input.list.options).find(option => input.value === option.value);
-                formData.nestedId["id"] = selectedOption.dataset.listId;
+
+                (!!selectedOption) ? formData.nestedId["id"] = selectedOption.dataset.listId: formData.nestedId["id"] = "";
             } else {
+                // text input
                 formData.bodyData[input.name] = input.value;
             }
         });
@@ -153,19 +162,25 @@ class myListsFormHandler {
     onSubmit(ev) {
         // console.log("onSubmit");
         ev.preventDefault();
-        console.log(this);
+        // console.log(this);
 
         const formData = this.buildDataForSubmit();
-        // console.log(formData);
 
-        if (!!formData.nestedId) {
-            // Add Website Form On Submit (contains an input and a datalist field)
-            myListsAddressHandler.onSubmit(formData)
+        if ((Object.values(formData.bodyData)[0].trim() === "") || (formData.hasOwnProperty("nestedId") && (Object.values(formData.nestedId)[0].trim() === ""))) {
+            window.alert("All fields are required. Please check your inputs.");
         } else {
-            // Add List Form On Submit (contains only an input field )
-            myListsFieldsetHandler.onSubmit(formData);
+            if (formData.hasOwnProperty("nestedId")) {
+                console.log("nested");
+                console.log(formData);
+                // Add Website Form On Submit (contains an input and a datalist field)
+                myListsAddressHandler.onSubmit(formData)
+            } else {
+                // Add List Form On Submit (contains only an input field )
+                console.log(formData);
+                myListsFieldsetHandler.onSubmit(formData);
 
-        };
+            };
+        }
     }
 }
 
@@ -195,6 +210,7 @@ class myListsDatalistHandler {
     }
     static createDatalistOption(jsonList) {
         // console.log("static createDatalistOption");
+        console.log(jsonList);
         const datalistOption = document.createElement("option");
         datalistOption.setAttribute("data-list-id", jsonList.id);
         datalistOption.setAttribute("value", jsonList.name);
@@ -215,8 +231,10 @@ class myListsFieldsetHandler {
 
     static onSubmit(data) {
         const url = LISTS_URL;
+        console.log(data);
         const jsonResp = myListsFetchRequest.myPostReq(url, data.bodyData)
             .then(resp => {
+                console.log(resp);
                 // Update Datalist in the Add Addreses Form with response
                 myListsDatalistHandler.htmlDatalist().appendChild(myListsDatalistHandler.createDatalistOption(resp));
                 // Update Fieldset with new List
@@ -256,15 +274,12 @@ class myListsAddressHandler {
         const url = `${LISTS_URL}/${data.nestedId.id}/resources`;
         const jsonResp = myListsFetchRequest.myPostReq(url, data.bodyData)
             .then(nestedResp => {
-                console.log(nestedResp);
 
                 // Find fieldset for rested resource
                 const fieldset = document.querySelector(`fieldset[data-list-id="${nestedResp.list_id}"]`);
 
                 const fieldsetUl = fieldset.querySelector("ul");
                 const listEmptyMsg = fieldsetUl.querySelector("ul li > p");
-                console.log(fieldsetUl)
-                console.log(listEmptyMsg);
 
                 // Remove empty list message, if any,  when adding a new address.
                 if (!!listEmptyMsg) {
@@ -352,7 +367,6 @@ class myListsAddressHandler {
         const addressId = childNode.dataset.addressId;
 
         parentNode.removeChild(childNode);
-        console.log(parentNode.children);
         if (!parentNode.children.length) {
             parentNode.appendChild(this.buildEmptyListDummy());
         }
